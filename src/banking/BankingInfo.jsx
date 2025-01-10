@@ -1,61 +1,105 @@
 import React from 'react';
-import Card from '@mui/material/Card';
-import Button from '@mui/material/Button';
-import './BankingInfo.css';
-import { useState, useEffect } from 'react'; 
-// tauri API invocation
-import { invoke } from "@tauri-apps/api/core";
+import { useState } from 'react';
 
-async function addAccount(){
-    // This function will be called when the user clicks the "Add Account" button
-    // We will need to prompt the user for the account name and initial balance
-    // Then we will call the Rust function to add the account
-    // Finally, we will update the state to reflect the new account
-    // TODO collect user input
-    return await invoke('create_checking_account', {name: "New Account"})
-        .then((_) => true)
-        .catch((error) => {
-            console.error(error);
-            return false;
-        });
-}
+import AccountCard from './widgets/AccountCard';
+import Button from '@mui/material/Button';
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import TextField from "@mui/material/TextField";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+
+import './BankingInfo.css';
+import useAccounts from "./hooks/useAccounts";
+// tauri API invocation
+import { message } from '@tauri-apps/plugin-dialog';
+
 
 export default function BankingInfo(){
 
-    let [accounts, setAccounts] = useState(Array(0));
-    let [refresh, setRefresh] = useState(0);
+    const {
+        checkingAccounts,
+        investmentAccounts,
+        addCheckingAccount,
+        addInvestmentAccount,
+        loading,
+        error,
+    } = useAccounts();
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [accountType, setAccountType] = useState("checking");
+    const [accountName, setAccountName] = useState("");
 
-    // Fetch the initial state from Rust
-    useEffect(() => {
-        invoke('get_checking_accounts', {})
-        .then((response) => {
-          console.log(response);
-          setAccounts(response);
-        })
-        .catch((error) => {
-          console.error(error);
-        });
+    const handleAddAccount = async () => {
+        if (!accountName.trim()) {
+            message("Account name is required.");
+            return;
+        }
 
-    }, [refresh]);
+        let success = false;
+
+        if (accountType === "checking") {
+            success = await addCheckingAccount(accountName);
+        } else if (accountType === "investment") {
+            success = await addInvestmentAccount(accountName);
+        }
+
+        if (success) {
+            message('Account added successfully');
+            setDialogOpen(false);
+        }
+    };
 
     return (
         <div className='bankingInfo'>
-            <div className='cardSlot'>
-                {accounts.length == 0 ? <p className='noAccounts'>No accounts yet</p> : accounts.map(account => (
-                    <Card key={account.id} style={{ padding: '20px', margin: '10px' }}>
-                        <h3>{account.nickname}</h3>
-                        <p>Balance: ${account.balance}</p>
-                    </Card>
-                ))}
+            {loading && <p>Loading accounts...</p>}
+            {error && <p className="error">{error}</p>}
+
+             <div className="cardSlot">
+                {checkingAccounts.length === 0 && <p className="noAccounts">No checking accounts yet</p>}
+                {checkingAccounts.map((account) => <AccountCard key={account.id} account={account} />)}
+                {investmentAccounts.length === 0 && <p className="noAccounts">No investment accounts yet</p>}
+                {investmentAccounts.map((account) => <AccountCard key={account.id} account={account} />)}
             </div>
-            <Button className='actionButton' variant='contained' color='primary' onClick={async ()=>{
-                let result = await addAccount();
-                if (result) {
-                    setRefresh(refresh + 1);
-                }
-            }}>
+            <Button
+                className="actionButton"
+                variant="contained"
+                color="primary"
+                onClick={() => setDialogOpen(true)}
+                disabled={loading}
+            >
                 Add Account
             </Button>
+            
+            {/* Add account dialog*/ }
+            <Dialog open={dialogOpen} onClose={()=>setDialogOpen(false)}>
+            <DialogTitle>Add New Account</DialogTitle>
+                <DialogContent>
+                    <Select
+                        fullWidth
+                        value={accountType}
+                        onChange={(e) => setAccountType(e.target.value)}
+                        style={{ marginBottom: "20px" }}
+                    >
+                        <MenuItem value="checking">Checking</MenuItem>
+                        <MenuItem value="investment">Investment</MenuItem>
+                    </Select>
+                    <TextField
+                        fullWidth
+                        label="Account Name"
+                        value={accountName}
+                        onChange={(e) => setAccountName(e.target.value)}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
+                    <Button variant="contained" color="primary" onClick={handleAddAccount}>
+                        Add Account
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
         </div>
     );
 } 
