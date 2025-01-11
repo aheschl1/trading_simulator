@@ -1,6 +1,6 @@
 use state::AppState;
 use tauri::State;
-use trading_engine::bank::accounts::{AccountType, CheckingAccount, InvestmentAccount};
+use trading_engine::bank::accounts::{Account, AccountType, CheckingAccount, InvestmentAccount};
 mod state;
 mod utils;
 
@@ -57,6 +57,29 @@ async fn create_investment_account(state: State<'_, AppState>, name: String) -> 
     Ok(())
 }
 
+#[tauri::command]
+async fn add_funds(state: State<'_, AppState>, id: u32, amount: f64, account_type: AccountType) -> Result<(), String> {
+    let mut bank = state
+        .bank
+        .lock()
+        .await;
+
+
+    match account_type {
+        AccountType::Checking => {
+            bank.get_checking_account_mut(id).map_err(|e| e.to_string())?.deposit(amount);
+        },
+        AccountType::Investment => {
+            bank.get_investment_account_mut(id).map_err(|e| e.to_string())?.deposit(amount);
+        },
+    };
+
+    // unlpck the bank
+    drop(bank);
+    let _ = state.save().await.map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let app_state = AppState::new();
@@ -69,7 +92,8 @@ pub fn run() {
             get_checking_accounts,
             get_investment_accounts,
             create_checking_account,
-            create_investment_account
+            create_investment_account,
+            add_funds
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

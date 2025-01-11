@@ -47,7 +47,7 @@ export default function useAccounts() {
             setError("Failed to add account. Please try again.");
             return false;
         }
-    });
+    }, [fetchAccounts]);
 
     useEffect(() => {
         fetchAccounts();
