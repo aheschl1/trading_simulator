@@ -1,6 +1,7 @@
 import "./App.css";
 import BankingInfo from "./banking/BankingInfo";
 import MarketOverview from "./market/MarketOverview";
+import {AccountsProvider} from "./banking/context/AccountContext";
 
 function App() {
   // I wish to split the screen into two components.
@@ -10,7 +11,7 @@ function App() {
   return (
     <div className="app-container">
       <div className="top-section">
-        <BankingInfo />
+        <AccountsProvider><BankingInfo /></AccountsProvider>
       </div>
       <div className="bottom-section">
         <MarketOverview />

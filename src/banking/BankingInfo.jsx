@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useState } from 'react';
 
 import AccountCard from './widgets/AccountCard';
@@ -12,24 +12,31 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 
 import './BankingInfo.css';
-import useAccounts from "./hooks/useAccounts";
 // tauri API invocation
 import { message } from '@tauri-apps/plugin-dialog';
 
+import { useAccounts } from './context/AccountContext';
+
+import createAccount from './account_helpers/createAccount';
 
 export default function BankingInfo(){
 
-    const {
-        checkingAccounts,
-        investmentAccounts,
-        addCheckingAccount,
-        addInvestmentAccount,
-        loading,
-        error,
+    const {addCheckingAccount, addInvestmentAccount} = createAccount();
+
+    const { 
+        checkingAccounts, 
+        investmentAccounts, 
+        loading, 
+        error, 
+        fetchAccounts 
     } = useAccounts();
+
     const [dialogOpen, setDialogOpen] = useState(false);
     const [accountType, setAccountType] = useState("checking");
     const [accountName, setAccountName] = useState("");
+    useEffect(() => {
+        fetchAccounts();
+    }, [fetchAccounts]);
 
     const handleAddAccount = async () => {
         if (!accountName.trim()) {

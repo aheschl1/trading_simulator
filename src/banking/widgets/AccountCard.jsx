@@ -6,6 +6,7 @@ import {
 import { invoke } from "@tauri-apps/api/core";
 import { useState } from "react";
 import { message } from '@tauri-apps/plugin-dialog';
+import { useAccounts } from "../context/AccountContext";
 
 // Utility to convert ISO timestamp to MM/DD/YYYY
 const convertToMMDDYYYY = (isoTimestamp) => {
@@ -52,21 +53,22 @@ const addFunds = async (account, accountType) => {
 
     const parsedAmount = parseFloat(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
-        alert("Please enter a positive number.");
-        return;
+        throw new Error("Please enter a positive number.");
     }
 
     try {
         await invoke("add_funds", { id: account.id, amount: parsedAmount, accountType });
-        message("Funds added successfully.");
+        // message("Funds added successfully.");
     } catch (e) {
-        alert(`Failed to add funds to account: ${e}`);
+        // alert(`Failed to add funds to account: ${e}`);
+        throw new Error(`Failed to add funds to account: ${e}`);
     }
 };
 
 // Main account card component
 export default function AccountCard({ account }) {
     const [popupOpen, setPopupOpen] = useState(false);
+    const { fetchAccounts } = useAccounts();
 
     const accountType = account.assets ? "Investment" : "Checking";
 
@@ -114,14 +116,22 @@ export default function AccountCard({ account }) {
                             <List>
                                 {account.transactions.map((transaction) => (
                                     <TransactionListItem transaction={transaction} key={transaction.id} />
-                                ))}
+                                )).reverse()}
                             </List>
                         </>
                     )}
                     <Button
                         variant="contained"
                         color="primary"
-                        onClick={() => addFunds(account, accountType)}
+                        onClick={async () => {
+                            try{
+                                await addFunds(account, accountType)
+                                message("Funds added successfully.");
+                                fetchAccounts();
+                            } catch (e) {
+                                alert(e);
+                            }
+                       }}
                         fullWidth
                         sx={{ marginTop: "16px" }}
                     >
