@@ -1,66 +1,48 @@
-
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 
-export const ONE_MINUTE = "OneMinute"
-export const FIVE_MINUTES = "FiveMinutes"
-export const FIFTEEN_MINUTES = "FifteenMinutes"
-export const THIRTY_MINUTES = "ThirtyMinutes"
-export const SIXTY_MINUTES = "SixtyMinutes"
+export function useFetchTimeSeries(command, params) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-export function getTimeSeriesIntraday(ticker, interval){
-    const [timeSeries, setTimeSeries] = useState([])
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const result = await invoke(command, params);
+        setData(result);
+      } catch (err) {
+        setError(err.message || "Error fetching data");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    useEffect(() => {
-        const fetchTimeSeries = async () => {
-            const timeSeries = await invoke("get_time_series_intraday", {"symbol": ticker, interval})
-            setTimeSeries(timeSeries)
-        }
-        fetchTimeSeries()
-    }, [ticker, interval])
+    fetchData();
+  }, [command, JSON.stringify(params)]); // Include params in dependency array
 
-    return timeSeries
+  return { data, loading, error };
 }
 
-export function getTimeSeriesDailyFull(ticker){
-    const [timeSeries, setTimeSeries] = useState([])
+export const ONE_MINUTE = "OneMinute";
+export const FIVE_MINUTES = "FiveMinutes";
+export const FIFTEEN_MINUTES = "FifteenMinutes";
+export const THIRTY_MINUTES = "ThirtyMinutes";
+export const SIXTY_MINUTES = "SixtyMinutes";
 
-    useEffect(() => {
-        const fetchTimeSeries = async () => {
-            const timeSeries = await invoke("get_time_series_daily_full", {"symbol": ticker})
-            setTimeSeries(timeSeries)
-        }
-        fetchTimeSeries()
-    }, [ticker])
-
-    return timeSeries
+export function getTimeSeriesIntraday(ticker, interval) {
+  return useFetchTimeSeries("get_time_series_intraday", { symbol: ticker, interval });
 }
 
-export function getTimeSeriesWeeklyFull(ticker){
-    const [timeSeries, setTimeSeries] = useState([])
-
-    useEffect(() => {
-        const fetchTimeSeries = async () => {
-            const timeSeries = await invoke("get_time_series_weekly_full", {"symbol": ticker})
-            setTimeSeries(timeSeries)
-        }
-        fetchTimeSeries()
-    }, [ticker])
-
-    return timeSeries
+export function getTimeSeriesDailyFull(ticker) {
+  return useFetchTimeSeries("get_time_series_daily_full", { symbol: ticker });
 }
 
-export function getTimeSeriesMonthlyFull(ticker){
-    const [timeSeries, setTimeSeries] = useState([])
-
-    useEffect(() => {
-        const fetchTimeSeries = async () => {
-            const timeSeries = await invoke("get_time_series_monthly_full", {"symbol": ticker})
-            setTimeSeries(timeSeries)
-        }
-        fetchTimeSeries()
-    }, [ticker])
-
-    return timeSeries
+export function getTimeSeriesWeeklyFull(ticker) {
+  return useFetchTimeSeries("get_time_series_weekly_full", { symbol: ticker });
 }
 
+export function getTimeSeriesMonthlyFull(ticker) {
+  return useFetchTimeSeries("get_time_series_monthly_full", { symbol: ticker });
+}

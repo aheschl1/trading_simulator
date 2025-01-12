@@ -115,7 +115,7 @@ export default function AccountCard({ account }) {
                             </Typography>
                             <List>
                                 {account.transactions.map((transaction) => (
-                                    <TransactionListItem transaction={transaction} key={transaction.id} />
+                                    <TransactionListItem transaction={transaction} key={transaction.date} />
                                 )).reverse()}
                             </List>
                         </>
