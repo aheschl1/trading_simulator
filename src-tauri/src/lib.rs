@@ -1,84 +1,10 @@
 use state::AppState;
-use tauri::State;
-use trading_engine::bank::accounts::{Account, AccountType, CheckingAccount, InvestmentAccount};
 mod state;
 mod utils;
+mod functions;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-#[tauri::command]
-async fn get_checking_accounts(state: State<'_, AppState>) -> Result<Vec<CheckingAccount>, String> {
-    let accounts = state
-        .bank
-        .lock()
-        .await
-        .get_checking_accounts()
-        .iter()
-        .map(|(_, account)| account.clone())
-        .collect();
-    Ok(accounts)
-}
 
-#[tauri::command]
-async fn get_investment_accounts(
-    state: State<'_, AppState>,
-) -> Result<Vec<InvestmentAccount>, String> {
-    let accounts = state
-        .bank
-        .lock()
-        .await
-        .get_investment_accounts()
-        .iter()
-        .map(|(_, account)| account.clone())
-        .collect();
-    Ok(accounts)
-}
-
-#[tauri::command]
-async fn create_checking_account(state: State<'_, AppState>, name: String) -> Result<(), String> {
-    state
-        .bank
-        .lock()
-        .await
-        .open_account(Some(name), AccountType::Checking)
-        .map_err(|e| e.to_string())?;
-    let _ = state.save().await;
-    Ok(())
-}
-
-#[tauri::command]
-async fn create_investment_account(state: State<'_, AppState>, name: String) -> Result<(), String>{
-    state
-        .bank
-        .lock()
-        .await
-        .open_account(Some(name), AccountType::Investment)
-        .map_err(|e| e.to_string())?;
-    let _ = state.save().await;
-    Ok(())
-}
-
-#[tauri::command]
-async fn add_funds(state: State<'_, AppState>, id: u32, amount: f64, account_type: AccountType) -> Result<(), String> {
-    let mut bank = state
-        .bank
-        .lock()
-        .await;
-
-
-    match account_type {
-        AccountType::Checking => {
-            bank.get_checking_account_mut(id).map_err(|e| e.to_string())?.deposit(amount);
-        },
-        AccountType::Investment => {
-            bank.get_investment_account_mut(id).map_err(|e| e.to_string())?.deposit(amount);
-        },
-    };
-
-    // unlpck the bank
-    drop(bank);
-    let _ = state.save().await.map_err(|e| e.to_string())?;
-    Ok(())
-}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -89,11 +15,11 @@ pub fn run() {
         .manage(app_state)
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
-            get_checking_accounts,
-            get_investment_accounts,
-            create_checking_account,
-            create_investment_account,
-            add_funds
+            functions::banking::get_checking_accounts,
+            functions::banking::get_investment_accounts,
+            functions::banking::create_checking_account,
+            functions::banking::create_investment_account,
+            functions::banking::add_funds
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -1,13 +1,16 @@
 use crate::utils;
-use std::{fs, ops::Deref, str::FromStr};
+use std::{fs, ops::Deref, str::FromStr, sync::Arc};
 use tauri::async_runtime::Mutex;
-use trading_engine::bank::Bank;
+use trading_engine::{bank::Bank, brokerage::Broker};
+use alphavantage::cache_enabled::client::Client;
+use std::env;
 
 const CACHE_PATH: &str = "~/.cache/trading_simulator";
 const BANK_PATH: &str = "~/.cache/trading_simulator/bank.json";
 
 pub struct AppState {
-    pub bank: Mutex<Bank>,
+    pub broker: Mutex<Broker>,
+    pub bank: Arc<Mutex<Bank>>
 }
 
 impl AppState {
@@ -24,10 +27,20 @@ impl AppState {
             Ok(contents) => Bank::from_str(&contents).unwrap_or(Bank::empty()),
             Err(_) => Bank::empty(),
         };
+        let bank = Arc::new(Mutex::new(bank));
+        // make the broker
+        let key = env::var("ALPHAVANTAGE_TOKEN").expect("ALPHAVANTAGE_TOKEN must be set");
+        let client = Client::new(&key);
+        let broker = Broker::new(client, bank.clone());
 
         AppState {
-            bank: Mutex::new(bank),
+            broker: Mutex::new(broker),
+            bank: bank.clone()
         }
+    }
+
+    pub async fn bank(&mut self) -> Arc<Mutex<Bank>> {
+        self.broker.lock().await.get_bank().clone()
     }
 
     pub async fn save(&self) -> Result<(), std::io::Error> {
