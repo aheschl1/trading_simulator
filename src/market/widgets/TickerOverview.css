@@ -1,0 +1,6 @@
+.parent {
+    display: grid;
+    place-items: center; /* Centers both horizontally and vertically */
+    height: 60vh;
+    border: 1px solid black;
+}

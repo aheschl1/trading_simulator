@@ -17,6 +17,7 @@ import {
   getTimeSeriesMonthlyFull,
   THIRTY_MINUTES,
 } from "../hooks/useTimeSeries";
+import "./TickerOverview.css";
 
 // Register required components
 ChartJS.register(
@@ -45,7 +46,7 @@ export default function TickerOverview({ ticker }) {
     "1d": intradayLoading ? undefined : intradayData.entries,
     "1w": dailyLoading ? undefined : dailyData.entries.slice(-7),
     "1m": dailyLoading ? undefined : dailyData.entries.slice(-30),
-    "3m": dailyLoading ? undefined : dailyData.entries.slice(``),
+    "3m": weeklyLoading ? undefined : weeklyData.entries.slice(-13),
     "1y": weeklyLoading ? undefined : weeklyData.entries.slice(-52),
     "5y": monthlyLoading ? undefined : monthlyData.entries.slice(-60),
   }[timeFrame];
@@ -56,7 +57,7 @@ export default function TickerOverview({ ticker }) {
     if (timeSeries && !isLoading && !hasError) {
         console.log(Object.keys(timeSeries));
       setChartData({
-        labels: timeSeries.map((entry) => new Date(entry.date).toLocaleDateString()),
+        labels: timeSeries.map((entry) => new Date(entry.date).toLocaleString()),
         datasets: [
           {
             label: `${ticker} Stock Price`,
@@ -71,10 +72,42 @@ export default function TickerOverview({ ticker }) {
   }, [isLoading, hasError, timeFrame]);
 
   return (
-    <div>
+    <div className="parent">
       <h1>{ticker}</h1>
+      {/* Loading and Error Handling */}
+      {isLoading && <p>Loading...</p>}
+      {hasError && <p>Error loading data: {hasError}</p>}
 
-      <div style={{ marginBottom: "1rem" }}>
+      {/* Render Chart */}
+      {!isLoading && !hasError && chartData && (
+        <div style={{ width: "100%", maxWidth: "800px", height: "100%", minHeight: "300px", margin: "0 auto" }}>
+        <Line
+          data={chartData}
+          options={{
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "top",
+              }
+            },
+            scales: {
+              x: {
+                display: false,
+              },
+              y: {
+                title: {
+                  display: true,
+                  text: "Stock Price (USD)",
+                },
+              },
+            },
+          }}
+        />
+      </div>
+      )}
+    
+    <div style={{ marginBottom: "1rem" }}>
         {/* Timeframe Buttons */}
         {["1d", "1w", "1m", "3m", "1y", "5y"].map((frame) => (
           <button
@@ -94,42 +127,6 @@ export default function TickerOverview({ ticker }) {
           </button>
         ))}
       </div>
-
-      {/* Loading and Error Handling */}
-      {isLoading && <p>Loading...</p>}
-      {hasError && <p>Error loading data: {hasError}</p>}
-
-      {/* Render Chart */}
-      {!isLoading && !hasError && chartData && (
-        <div style={{ width: "100%", maxWidth: "800px", minHeight: "500px", margin: "0 auto" }}>
-        <Line
-          data={chartData}
-          options={{
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: "top",
-              },
-            },
-            scales: {
-              x: {
-                title: {
-                  display: true,
-                  text: "Date",
-                },
-              },
-              y: {
-                title: {
-                  display: true,
-                  text: "Stock Price (USD)",
-                },
-              },
-            },
-          }}
-        />
-      </div>
-      )}
     </div>
   );
 }
