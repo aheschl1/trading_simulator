@@ -18,6 +18,7 @@ import {
   THIRTY_MINUTES,
 } from "../hooks/useTimeSeries";
 import "./TickerOverview.css";
+import TickerPopup from "./TickerPopup";
 
 // Register required components
 ChartJS.register(
@@ -33,6 +34,7 @@ ChartJS.register(
 export default function TickerOverview({ ticker }) {
   const [timeFrame, setTimeFrame] = useState("1d");
   const [chartData, setChartData] = useState(null);
+  const [popupOpen, setPopupOpen] = useState(false);
 
   // Fetch time series data based on the selected time frame
   const { data: intradayData, loading: intradayLoading, error: intradayError } = getTimeSeriesIntraday(
@@ -126,7 +128,22 @@ export default function TickerOverview({ ticker }) {
             {frame.toUpperCase()}
           </button>
         ))}
+        <button
+          onClick={() => setPopupOpen(true)}
+          style={{
+            margin: "0 5px",
+            marginTop: "6px",
+            padding: "8px 12px",
+            backgroundColor: "#e0e0e0",
+            color: "#000",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+          }}
+        >Expand</button>
       </div>
+      {/* Popup */}
+      <TickerPopup open={popupOpen} setOpen={setPopupOpen} intradayData={intradayData} symbol={ticker}/>
     </div>
   );
 }
