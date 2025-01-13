@@ -1,27 +1,46 @@
-import { Dialog, DialogContent, DialogTitle, Typography } from "@mui/material";
+import { Dialog, DialogContent, DialogTitle, Typography, Button } from "@mui/material";
+import { useEffect, useState } from "react";
+import { useTicker } from "../context/TickerContext";
+import TickerChart from "./TickerChart";
 
-export default function TickerPopup({open, setOpen, symbol, intradayData}){
+export default function TickerPopup({open, setOpen, purchase}){
+
+    let [dataset, setDataset] = useState(null)
+    let [lastUpdated, setLastUpdated] = useState(null)
+    let [currentPrice, setCurrentPrice] = useState(null)
+
+    let { symbol, intradayData } = useTicker();
+
+    useEffect(()=>{
+        if(!intradayData)
+            return
+        setLastUpdated(new Date(intradayData.last_refreshed).toLocaleString())
+        setCurrentPrice(intradayData.entries[intradayData.entries.length - 1].close)
+    }, [intradayData])
+    
+
     return <Dialog open={open} fullWidth maxWidth="md" onClose={()=>setOpen(false)}>
         <DialogTitle>{symbol}</DialogTitle>
-        {intradayData && <DialogContent>
+        {intradayData && 
+        <DialogContent>
+            <TickerChart/>
+            <div style={{ height: "16px" }}/>
             <Typography variant="body1">
-                Last Updated: {new Date(intradayData.last_refreshed).toLocaleString()}
+                Last Updated: {lastUpdated}
             </Typography>
             <Typography variant="body1">
-                Current Price: ${intradayData.entries[intradayData.entries.length - 1].close}
+                Current Price: ${currentPrice}
             </Typography>
-            <Typography variant="body1">
-                Open: ${intradayData.entries[intradayData.entries.length - 1].open}
-            </Typography>
-            <Typography variant="body1">
-                High: ${intradayData.entries[intradayData.entries.length - 1].high}
-            </Typography>
-            <Typography variant="body1">
-                Low: ${intradayData.entries[intradayData.entries.length - 1].low}
-            </Typography>
-            <Typography variant="body1">
-                Volume: {intradayData.entries[intradayData.entries.length - 1].volume}
-            </Typography>
+            <Button
+                variant="contained"
+                color="primary"
+                onClick={async () => {
+                    await purchase()
+                }}
+                fullWidth
+                sx={{ marginTop: "16px" }}>
+                Purchase
+            </Button>
         </DialogContent>}
     </Dialog>
 }

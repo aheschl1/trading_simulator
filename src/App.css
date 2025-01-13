@@ -1,7 +1,5 @@
 .app-container {
-  display: grid;
-  grid-template-columns: 1fr; /* 1 column */
-  grid-auto-rows: auto;      /* Dynamically sized rows */
-  gap: 16px;                 /* Spacing between rows */
+  display: flex;
   padding: 16px;
+  flex-direction: column;
 }

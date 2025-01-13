@@ -1,0 +1,17 @@
+.parent{
+    width: fit-content;
+    height: fit-content;
+    min-height: 300px;
+    min-width: 300px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.buttons{
+    display: flex;
+    width: 100%;
+    margin-top: 10px;
+    justify-content: center;
+}
