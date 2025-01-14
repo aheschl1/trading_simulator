@@ -13,6 +13,7 @@ export function useFetchTimeSeries(command, params) {
         const result = await invoke(command, params);
         setData(result);
       } catch (err) {
+        console.error(err);
         setError(err.message || "Error fetching data");
       } finally {
         setLoading(false);

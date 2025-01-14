@@ -37,13 +37,12 @@ export default function TickerChart (){
 
     useEffect(() => {
         if (timeSeries && !isLoading && !hasError) {
-            console.log(Object.keys(timeSeries));
           setChartData({
             labels: timeSeries.map((entry) => new Date(entry.date).toLocaleString()),
             datasets: [
               {
                 label: `${symbol} Stock Price`,
-                data: timeSeries.map((entry) => entry.close),
+                data: timeSeries.map((entry) => entry.adjusted_close ? entry.adjusted_close : entry.close),
                 borderColor: "rgba(75, 192, 192, 1)",
                 backgroundColor: "rgba(75, 192, 192, 0.2)",
                 fill: true,
