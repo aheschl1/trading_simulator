@@ -5,7 +5,6 @@ import TickerChart from "./TickerChart";
 
 export default function TickerPopup({open, setOpen, purchase}){
 
-    let [dataset, setDataset] = useState(null)
     let [lastUpdated, setLastUpdated] = useState(null)
     let [currentPrice, setCurrentPrice] = useState(null)
 

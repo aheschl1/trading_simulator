@@ -3,3 +3,19 @@
   padding: 16px;
   flex-direction: column;
 }
+
+.top-section{
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  height: 60px;
+  flex: 1;
+}
+
+.bottom-section{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 60px;
+  flex: 3;
+}

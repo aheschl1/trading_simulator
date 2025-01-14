@@ -7,6 +7,7 @@ import {
     THIRTY_MINUTES 
 } from "../hooks/useTimeSeries";
 import { useContext } from "react";
+import { useSimulatedDate } from "../../contexts/SimulatedDateContext";
 
 
 const TickerContext = createContext()
