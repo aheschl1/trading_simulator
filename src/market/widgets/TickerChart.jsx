@@ -73,7 +73,7 @@ export default function TickerChart() {
             data: timeSeries.map((entry) => entry.adjusted_close ? entry.adjusted_close : entry.close),
             borderColor: noData ? "rgba(169, 169, 169, 1)" : "rgba(75, 192, 192, 1)", // Grayed out if no data
             backgroundColor: noData ? "rgba(169, 169, 169, 0.2)" : "rgba(75, 192, 192, 0.2)", // Grayed out if no data
-            fill: true,
+            fill: false,
           },
         ],
       });
