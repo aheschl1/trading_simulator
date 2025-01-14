@@ -6,6 +6,7 @@ const AccountsContext = createContext();
 export function AccountsProvider({ children }) {
     const [checkingAccounts, setCheckingAccounts] = useState([]);
     const [investmentAccounts, setInvestmentAccounts] = useState([]);
+    const [selectedAccount, setSelectedAccount] = useState(undefined);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -17,6 +18,12 @@ export function AccountsProvider({ children }) {
                 invoke("get_checking_accounts", {}),
                 invoke("get_investment_accounts", {}),
             ]);
+            if (
+                selectedAccount &&
+                !checking.find(account => account.id === selectedAccount.id) && 
+                !investment.find(account => account.id === selectedAccount.id)) {
+                    setSelectedAccount(undefined);
+            }
             setCheckingAccounts(checking);
             setInvestmentAccounts(investment);
         } catch (err) {
@@ -28,7 +35,7 @@ export function AccountsProvider({ children }) {
     }, []);
 
     return (
-        <AccountsContext.Provider value={{ checkingAccounts, investmentAccounts, loading, error, fetchAccounts }}>
+        <AccountsContext.Provider value={{ checkingAccounts, investmentAccounts, selectedAccount, loading, error, setSelectedAccount, fetchAccounts }}>
             {children}
         </AccountsContext.Provider>
     );

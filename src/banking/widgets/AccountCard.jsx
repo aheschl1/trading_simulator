@@ -19,12 +19,22 @@ const convertToMMDDYYYY = (isoTimestamp) => {
 
 // Transaction list item component
 const TransactionListItem = ({ transaction }) => {
-    const [descriptionExpanded, setDescriptionExpanded] = useState(false);
 
+    const getTransactionTitle = () => {
+        // Deposit, or, {Purchase: [{symbol: "AAPL"}, 234.6]}
+        if (typeof transaction.transaction_type === "string") {
+            return transaction.transaction_type
+        }
+        if ("Purchase" in transaction.transaction_type) {
+            return `Purchase: ${transaction.transaction_type.Purchase[1]} shares of ${transaction.transaction_type.Purchase[0].symbol}`;
+        }
+    }
+
+    const [descriptionExpanded, setDescriptionExpanded] = useState(false);
     return (
         <ListItem key={transaction.id} alignItems="flex-start" sx={{ flexDirection: "column", alignItems: "flex-start" }}>
             <ListItemText
-                primary={transaction.transaction_type}
+                primary={getTransactionTitle()}
                 secondary={`$${transaction.amount} on ${convertToMMDDYYYY(transaction.date)}`}/>
             <Collapse in={descriptionExpanded} timeout="auto" unmountOnExit>
                 <Typography
@@ -36,7 +46,7 @@ const TransactionListItem = ({ transaction }) => {
                 </Typography>
             </Collapse>
             <Button
-                onClick={() => setDescriptionExpanded(!descriptionExpanded)}
+                onClick={() => setDescriptionExpanded(!descriptionExpanded)} 
                 size="small"
                 sx={{ textTransform: "none", marginTop: "8px" }}>
                 {descriptionExpanded ? "Hide Description" : "Show Description"}

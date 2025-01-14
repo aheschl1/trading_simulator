@@ -9,15 +9,17 @@ import DigitalClock from "./widgets/Clock";
 function App() {
   return (
     <SimulatedDateProvider>
+      <AccountsProvider>
       <div className="app-container">
         <div className="top-section">
           <DigitalClock/>
-          <AccountsProvider><BankingInfo /></AccountsProvider>
+          <BankingInfo />
         </div>
         <div className="bottom-section">
           <MarketOverview />
         </div>
       </div>
+      </AccountsProvider>
     </SimulatedDateProvider>
   );
 }

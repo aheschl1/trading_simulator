@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useTicker } from "../context/TickerContext";
 import TickerChart from "./TickerChart";
 
-export default function TickerPopup({open, setOpen, purchase}){
+export default function TickerPopup({open, setOpen, purchase, loadingPurchase}){
 
     let [lastUpdated, setLastUpdated] = useState(null)
     let [currentPrice, setCurrentPrice] = useState(null)
@@ -37,8 +37,9 @@ export default function TickerPopup({open, setOpen, purchase}){
                     await purchase()
                 }}
                 fullWidth
+                disabled={loadingPurchase}
                 sx={{ marginTop: "16px" }}>
-                Purchase
+                {!loadingPurchase ? "Purchase" : "Loading..."}
             </Button>
         </DialogContent>}
     </Dialog>
