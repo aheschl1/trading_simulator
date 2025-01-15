@@ -34,4 +34,6 @@
     justify-items: center; /* Center items horizontally */
     max-width: 100%; /* Ensure the container does not restrict width */
     width: 100%; /* Full width */
+    max-height: 50vh; /* Ensure the container does not go off screen */
+    overflow-x: scroll;
 }

@@ -30,7 +30,7 @@ export default function MarketOverview() {
                         variant="outlined"
                         sx={{
                             marginBottom: 2, // Improved spacing
-                            width: "100%",
+                            width: "90%",
                             boxShadow: 1, // Subtle shadow for depth
                             borderRadius: 2, // Rounded corners
                             transition: "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out", // Hover effect
@@ -38,6 +38,7 @@ export default function MarketOverview() {
                                 transform: "scale(1.02)", // Slight scale-up on hover
                                 boxShadow: 3, // Stronger shadow on hover
                             },
+                            minHeight: 100 // Improved spacing
                         }}
                     >
                         <CardContent>
