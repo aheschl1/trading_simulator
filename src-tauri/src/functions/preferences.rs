@@ -13,5 +13,6 @@ pub async fn get_favorite_tickers(state: State<'_, AppState>) -> Result<Vec<Asse
 pub async fn add_favorite_ticker(state: State<'_, AppState>, symbol: String) -> Result<(), String> {
     let ticker = Asset::new(symbol);
     state.favorite_tickers.lock().await.push(ticker);
+    let _ = state.save().await;
     Ok(())
 }

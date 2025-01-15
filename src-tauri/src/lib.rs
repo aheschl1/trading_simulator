@@ -25,7 +25,9 @@ pub fn run() {
             functions::market::get_time_series_monthly_full,
             functions::market::get_time_series_intraday,
             functions::trading::purchase_shares,
-            functions::market::get_tickers
+            functions::market::get_tickers,
+            functions::preferences::get_favorite_tickers,
+            functions::preferences::add_favorite_ticker,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
