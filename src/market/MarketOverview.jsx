@@ -3,44 +3,13 @@ import { TickerProvider } from "./context/TickerContext";
 import "./MarketOverview.css";
 import TickerOverview from "./widgets/TickerOverview";
 import { TextField, Card, CardContent, Typography } from '@mui/material';
+import useSearchResults from "./hooks/useSearchResults";
 
 
 export default function MarketOverview() {
 
-    const [searchResults, setSearchResults] = useState([]);
-
-    const onSearchChange = (e) => {
-        const searchValue = e.target.value;
-        if (searchValue.length > 0) {
-            const results = [
-                {
-                    symbol: "AAPL",
-                    name: "Apple Inc.",
-                    stock_type: "Equity",
-                    region: "United States",
-                    market_open: "09:30",
-                    market_close: "16:00",
-                    timezone: "EST",
-                    currency: "USD",
-                    match_score: 0.95
-                },
-                {
-                    symbol: "MSFT",
-                    name: "Microsoft Corporation",
-                    stock_type: "Equity",
-                    region: "United States",
-                    market_open: "09:30",
-                    market_close: "16:00",
-                    timezone: "EST",
-                    currency: "USD",
-                    match_score: 0.92
-                }
-            ];
-            setSearchResults(results);
-        } else {
-            setSearchResults([]);
-        }
-    }
+    const [searchValue, setSearchValue] = useState("");
+    const {searchResults, loading: searchLoading, error: searchError} = useSearchResults(searchValue); 
 
     return <div className="market-overview">
         <div className="search">
@@ -50,10 +19,12 @@ export default function MarketOverview() {
                 variant="outlined"
                 fullWidth
                 margin="normal"
-                onChange={onSearchChange}
+                onChange={(e)=>setSearchValue(e.target.value)}
             />
             <div className="search-results">
-                {searchResults.map((result, index) => (
+                {searchLoading && <Typography variant="body1">Loading...</Typography>}
+                {searchError && <Typography variant="body1" color="error">{searchError}</Typography>}
+                {!searchLoading && !searchError && searchResults.map((result, index) => (
                     <Card
                         key={index}
                         variant="outlined"

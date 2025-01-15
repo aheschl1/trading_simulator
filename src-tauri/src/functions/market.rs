@@ -1,4 +1,4 @@
-use alphavantage::{cache_enabled::time_series::TimeSeries, time_series::IntradayInterval};
+use alphavantage::{cache_enabled::{tickers::SearchResults, time_series::TimeSeries}, time_series::IntradayInterval};
 use chrono::{format, DateTime, FixedOffset};
 use tauri::{self, State};
 
@@ -38,4 +38,13 @@ pub async fn get_time_series_intraday(state: State<'_, AppState>, symbol: String
         .get_time_series_intraday(&symbol, interval).await
         .map_err(|e| format!("{:?}", e))?;
     Ok(time_series)
+}
+
+#[tauri::command]
+pub async fn get_tickers(state: State<'_, AppState>, query: String) -> Result<SearchResults, String> {
+    let tickers = 
+        state.broker.lock().await
+        .get_tickers(&query).await
+        .map_err(|e| format!("{:?}", e))?;
+    Ok(tickers)
 }
