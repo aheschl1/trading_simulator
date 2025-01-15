@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogTitle, Typography, Button } from "@mui/mat
 import { useEffect, useState } from "react";
 import { useTicker } from "../context/TickerContext";
 import TickerChart from "./TickerChart";
+import { useSimulatedDate } from "../../contexts/SimulatedDateContext";
 
 export default function TickerPopup({open, setOpen, purchase, loadingPurchase}){
 
@@ -9,12 +10,15 @@ export default function TickerPopup({open, setOpen, purchase, loadingPurchase}){
     let [currentPrice, setCurrentPrice] = useState(null)
 
     let { symbol, intradayData } = useTicker();
+    let { simulatedDate } = useSimulatedDate();
 
     useEffect(()=>{
         if(!intradayData)
             return
         setLastUpdated(new Date(intradayData.last_refreshed).toLocaleString())
-        setCurrentPrice(intradayData.entries[intradayData.entries.length - 1].close)
+        setCurrentPrice(
+            intradayData.entries.filter(entry => new Date(entry.date) <= simulatedDate).slice(-1)[0].close
+        )
     }, [intradayData])
     
 

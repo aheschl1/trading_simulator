@@ -1,7 +1,7 @@
-import { 
-    Card, ButtonBase, Button, Dialog, 
+import {
+    Card, ButtonBase, Button, Dialog,
     DialogTitle, DialogContent, List, ListItem,
-    ListItemText, Collapse, Typography 
+    ListItemText, Collapse, Typography
 } from "@mui/material";
 import { invoke } from "@tauri-apps/api/core";
 import { useState } from "react";
@@ -35,7 +35,7 @@ const TransactionListItem = ({ transaction }) => {
         <ListItem key={transaction.id} alignItems="flex-start" sx={{ flexDirection: "column", alignItems: "flex-start" }}>
             <ListItemText
                 primary={getTransactionTitle()}
-                secondary={`$${transaction.amount} on ${convertToMMDDYYYY(transaction.date)}`}/>
+                secondary={`$${transaction.amount} on ${convertToMMDDYYYY(transaction.date)}`} />
             <Collapse in={descriptionExpanded} timeout="auto" unmountOnExit>
                 <Typography
                     variant="body2"
@@ -46,7 +46,7 @@ const TransactionListItem = ({ transaction }) => {
                 </Typography>
             </Collapse>
             <Button
-                onClick={() => setDescriptionExpanded(!descriptionExpanded)} 
+                onClick={() => setDescriptionExpanded(!descriptionExpanded)}
                 size="small"
                 sx={{ textTransform: "none", marginTop: "8px" }}>
                 {descriptionExpanded ? "Hide Description" : "Show Description"}
@@ -98,8 +98,15 @@ export default function AccountCard({ account }) {
                         {accountType}
                     </Typography>
                     <Typography variant="body2" component="p">
-                        Balance: ${account.balance}
+                        Balance: ${account.balance.toFixed(2)}
                     </Typography>
+                    {
+                        accountType === "Investment" && (
+                            <Typography variant="body2" component="p">
+                                Total Assets: ${Object.values(account.assets).reduce((acc, asset) => acc + asset.quantity * asset.average_cost_per_unit, 0).toFixed(2)}
+                            </Typography>
+                        )
+                    }
                 </Card>
             </ButtonBase>
 
@@ -108,7 +115,7 @@ export default function AccountCard({ account }) {
                 <DialogTitle>{account.nickname}</DialogTitle>
                 <DialogContent>
                     <Typography variant="body1">
-                        Balance: ${account.balance}
+                        Balance: ${account.balance.toFixed(2)}
                     </Typography>
                     <Typography variant="h6" sx={{ marginTop: "16px" }}>
                         Account Details
@@ -119,6 +126,43 @@ export default function AccountCard({ account }) {
                     <Typography variant="body2">
                         Opened: {convertToMMDDYYYY(account.created_at)}
                     </Typography>
+                    {/* Assets */}
+                    {accountType === "Investment" && (
+                        <>
+                            <Typography variant="h6" sx={{ marginTop: "16px" }}>
+                                Assets
+                            </Typography>
+                            <List>
+                                {Object.entries(account.assets).map(([symbol, holding]) => (
+                                    <ListItem key={symbol} sx={{ padding: 0 }}>
+                                        <Card
+                                            sx={{
+                                                width: "100%",
+                                                marginBottom: 2,
+                                                padding: 2,
+                                                boxShadow: 2,
+                                                borderRadius: 2
+                                            }}
+                                        >
+                                            <ListItemText
+                                                primary={
+                                                    <Typography variant="subtitle1" fontWeight="bold">
+                                                        {`${holding.quantity} shares of ${symbol}`}
+                                                    </Typography>
+                                                }
+                                                secondary={
+                                                    <Typography variant="body2" color="textSecondary">
+                                                        {`Average Cost: $${holding.average_cost_per_unit.toFixed(2)}`}
+                                                    </Typography>
+                                                }
+                                            />
+                                        </Card>
+                                    </ListItem>
+                                ))}
+                            </List>
+                        </>
+                    )}
+
                     {account.transactions.length > 0 && (
                         <>
                             <div style={{
@@ -127,10 +171,11 @@ export default function AccountCard({ account }) {
                                 width: "100%",
                                 marginTop: "16px",
                             }}>
-                                <Typography variant="h6" style={{"marginRight": "16px"}}>Transactions</Typography>
+                                <Typography variant="h6" style={{ "marginRight": "16px" }}>Transactions</Typography>
                                 <Button
                                     onClick={() => setTransactionsExpanded(!transactionsExpanded)}
-                                    sx={{ textTransform: "none" }}>{transactionsExpanded ? "Hide" : "Expand" }</Button>
+                                    sx={{ textTransform: "none" }}>{transactionsExpanded ? "Hide" : "Expand"}
+                                </Button>
                             </div>
                             <Collapse in={transactionsExpanded} timeout="auto" unmountOnExit>
                                 <List>
@@ -141,18 +186,19 @@ export default function AccountCard({ account }) {
                             </Collapse>
                         </>
                     )}
+
                     <Button
                         variant="contained"
                         color="primary"
                         onClick={async () => {
-                            try{
+                            try {
                                 await addFunds(account, accountType)
                                 message("Funds added successfully.");
                                 fetchAccounts();
                             } catch (e) {
                                 alert(e);
                             }
-                       }}
+                        }}
                         fullWidth
                         sx={{ marginTop: "16px" }}
                     >
