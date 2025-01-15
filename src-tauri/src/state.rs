@@ -1,16 +1,19 @@
 use crate::utils;
 use std::{fs, ops::Deref, str::FromStr, sync::Arc};
-use tauri::async_runtime::Mutex;
+use tauri::{async_runtime::Mutex};
 use trading_engine::{bank::Bank, brokerage::Broker};
 use alphavantage::cache_enabled::client::Client;
 use std::env;
+use trading_engine::bank::stock::Asset;
 
 const CACHE_PATH: &str = "~/.cache/trading_simulator";
 const BANK_PATH: &str = "~/.cache/trading_simulator/bank.json";
+const FAVORITE_TICKERS_PATH: &str = "~/.cache/trading_simulator/favorite_tickers.json";
 
 pub struct AppState {
     pub broker: Mutex<Broker>,
-    pub bank: Arc<Mutex<Bank>>
+    pub bank: Arc<Mutex<Bank>>,
+    pub favorite_tickers: Mutex<Vec<Asset>>,
 }
 
 impl AppState {
@@ -28,6 +31,12 @@ impl AppState {
             Err(_) => Bank::empty(),
         };
         let bank = Arc::new(Mutex::new(bank));
+        // favorites
+        let favorite_tickers_path = utils::expand_tilde(FAVORITE_TICKERS_PATH);
+        let favorite_tickers: Vec<Asset> = match fs::read_to_string(&favorite_tickers_path) {
+            Ok(contents) => serde_json::from_str(&contents).unwrap_or(Vec::new()),
+            Err(_) => Vec::new(),
+        };
         // make the broker
         let key = env::var("ALPHAVANTAGE_TOKEN").expect("ALPHAVANTAGE_TOKEN must be set");
         let client = Client::new(&key);
@@ -35,7 +44,8 @@ impl AppState {
 
         AppState {
             broker: Mutex::new(broker),
-            bank: bank.clone()
+            bank: bank.clone(),
+            favorite_tickers: Mutex::new(favorite_tickers)
         }
     }
 
@@ -47,6 +57,11 @@ impl AppState {
         let bank_path = utils::expand_tilde(BANK_PATH);
         let bank_json = self.bank.lock().await.to_string();
         fs::write(&bank_path, bank_json)?;
+        // save favorites
+        let favorite_tickers_path = utils::expand_tilde(FAVORITE_TICKERS_PATH);
+        let favorites = &self.favorite_tickers.lock().await.to_vec();
+        let favorite_tickers_json = serde_json::to_string(favorites)?;
+        fs::write(&favorite_tickers_path, favorite_tickers_json)?;
         Ok(())
     }
 }
