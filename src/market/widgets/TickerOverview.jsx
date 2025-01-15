@@ -37,6 +37,8 @@ export default function TickerOverview() {
   const {selectedAccount, setSelectedAccount} = useAccounts();
   const [loadingPurchase, setLoadingPurchase] = useState(false);
   const {fetchAccounts} = useAccounts();
+  const [purchasing, setPurchasing] = useState(false);
+
   let {simulatedDate} = useSimulatedDate()
 
   let {
@@ -44,10 +46,28 @@ export default function TickerOverview() {
     hasError,
     symbol,
   } = useTicker();
-  
+
+
+  useEffect(() => {
+    if(!purchasing){
+      return;
+    }
+    if(selectedAccount === undefined){
+      setIsSelectingAccount(true);
+      return;
+    }
+    purchase();
+    setPurchasing(false);
+  }, [purchasing, selectedAccount]);
+
   const purchase = async () => {
     if(selectedAccount === undefined){
-      message("Please select an account.", {"title": "No Account Selected", "type": "error"});
+      message("Please select an account to purchase shares", {"title": "Select Account", "type": "info"});
+      return;
+    }
+    // ensure it is an investment account
+    if(selectedAccount.assets === undefined){
+      message("Please select an investment account to purchase shares", {"title": "Select Investment Account", "type": "info"});
       setIsSelectingAccount(true);
       return;
     }
@@ -99,7 +119,9 @@ export default function TickerOverview() {
         <TickerChart/>
       )}
       {/* Popup */}
-      <TickerPopup open={popupOpen} setOpen={setPopupOpen} purchase={purchase} loadingPurchase={loadingPurchase}/>
+      <TickerPopup open={popupOpen} setOpen={setPopupOpen} purchase={()=>{
+        setPurchasing(true);
+      }} loadingPurchase={loadingPurchase}/>
       {/* Purchase account select */}
       {
         isSelectingAccount && 

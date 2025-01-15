@@ -78,6 +78,7 @@ const addFunds = async (account, accountType) => {
 // Main account card component
 export default function AccountCard({ account }) {
     const [popupOpen, setPopupOpen] = useState(false);
+    const [transactionsExpanded, setTransactionsExpanded] = useState(false);
     const { fetchAccounts } = useAccounts();
 
     const accountType = account.assets ? "Investment" : "Checking";
@@ -120,14 +121,24 @@ export default function AccountCard({ account }) {
                     </Typography>
                     {account.transactions.length > 0 && (
                         <>
-                            <Typography variant="h6" sx={{ marginTop: "16px" }}>
-                                Transactions
-                            </Typography>
-                            <List>
-                                {account.transactions.map((transaction) => (
-                                    <TransactionListItem transaction={transaction} key={transaction.date} />
-                                )).reverse()}
-                            </List>
+                            <div style={{
+                                display: "flex",
+                                alignItems: "center",
+                                width: "100%",
+                                marginTop: "16px",
+                            }}>
+                                <Typography variant="h6" style={{"marginRight": "16px"}}>Transactions</Typography>
+                                <Button
+                                    onClick={() => setTransactionsExpanded(!transactionsExpanded)}
+                                    sx={{ textTransform: "none" }}>{transactionsExpanded ? "Hide" : "Expand" }</Button>
+                            </div>
+                            <Collapse in={transactionsExpanded} timeout="auto" unmountOnExit>
+                                <List>
+                                    {account.transactions.map((transaction) => (
+                                        <TransactionListItem transaction={transaction} key={transaction.date} />
+                                    )).reverse()}
+                                </List>
+                            </Collapse>
                         </>
                     )}
                     <Button
