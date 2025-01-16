@@ -31,6 +31,9 @@ const TransactionListItem = ({ transaction }) => {
         if ("Purchase" in transaction.transaction_type) {
             return `Purchase: ${transaction.transaction_type.Purchase[1]} shares of ${transaction.transaction_type.Purchase[0].symbol}`;
         }
+        if ("Sale" in transaction.transaction_type) {
+            return `Sale: ${transaction.transaction_type.Sale[1]} shares of ${transaction.transaction_type.Sale[0].symbol}`;
+        }
     }
 
     const [descriptionExpanded, setDescriptionExpanded] = useState(false);
