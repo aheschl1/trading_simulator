@@ -1,7 +1,7 @@
 import {
     Card, ButtonBase, Button, Dialog,
     DialogTitle, DialogContent, List, ListItem,
-    ListItemText, Collapse, Typography
+    ListItemText, Collapse, Typography, Box
 } from "@mui/material";
 import { invoke } from "@tauri-apps/api/core";
 import { useState } from "react";
@@ -9,6 +9,7 @@ import { message } from '@tauri-apps/plugin-dialog';
 import { useAccounts } from "../context/AccountContext";
 import useCurrentValue from "../hooks/useCurrentValue";
 import { useSimulatedDate } from "../../contexts/SimulatedDateContext";
+import sellShares from "../../market/trading/sellStock";
 
 // Utility to convert ISO timestamp to MM/DD/YYYY
 const convertToMMDDYYYY = (isoTimestamp) => {
@@ -57,47 +58,93 @@ const TransactionListItem = ({ transaction }) => {
     );
 };
 
-const HoldingListItem = ({ symbol, holding }) => {
+const HoldingListItem = ({ symbol, holding, accountId }) => {
 
     const { simulatedDate } = useSimulatedDate();
     const { currentValue, loading, error } = useCurrentValue(symbol, holding.quantity, simulatedDate);
+    const { fetchAccounts } = useAccounts();
+
+    const profitLoss = (currentValue - holding.average_cost_per_unit * holding.quantity).toFixed(2);
+    const percentGain = ((profitLoss / (holding.average_cost_per_unit * holding.quantity)) * 100).toFixed(2);
+
+    const handleSell = async () => {
+        try{
+            let quantity = prompt(`Enter the number of shares you would like to sell. Type MAX to sell all shares.`);
+            if (!quantity) return;
+            if (quantity.toLowerCase() === "max") {
+                quantity = holding.quantity;
+            }else{
+                quantity = parseInt(quantity);
+                if (isNaN(quantity) || quantity <= 0 || quantity > holding.quantity) {
+                    message("Please enter a valid number of shares to sell.", {title: "Invalid quantity", type: "error"});
+                    return;
+                }
+            }
+            await sellShares(quantity, symbol, accountId, simulatedDate)
+            fetchAccounts()
+            message(`Successfully sold ${quantity} shares of ${symbol}.`);
+        } catch (e) {
+            message(e, {title: "Error selling shares", type: "error"})
+        }
+    }
 
     return <ListItem key={symbol} sx={{ padding: 0 }}>
         <Card
             sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
                 width: "100%",
                 marginBottom: 2,
                 padding: 2,
                 boxShadow: 2,
-                borderRadius: 2
+                borderRadius: 2,
+                backgroundColor: "#f9f9f9"
             }}
         >
-            <ListItemText
-                primary={
-                    <Typography variant="subtitle1" fontWeight="bold">
-                        {`${holding.quantity} shares of ${symbol}`}
-                    </Typography>
-                }
-                secondary={
-                    <Typography variant="body2" color="textSecondary">
-                        {`Average Cost: $${holding.average_cost_per_unit.toFixed(2)}`}
-                    </Typography>
-                }
-            />
-            <ListItemText
-                primary={
-                    <Typography variant="subtitle1">
-                        {loading ? "Loading..." : (error ? "Error" : `Current Value: $${currentValue.toFixed(2)}`)}
-                    </Typography>
-                }
-                secondary={
-                    <Typography variant="body2" color="textSecondary">
-                        {loading ? "Loading..." : (error ? error : `Profit/Loss: $${(currentValue - holding.average_cost_per_unit * holding.quantity).toFixed(2)}`)}
-                    </Typography>
-                }
-            />
+            <Box sx={{ flex: 1 }}>
+                <ListItemText
+                    primary={
+                        <Typography variant="subtitle1" fontWeight="bold">
+                            {`${holding.quantity} shares of ${symbol}`}
+                        </Typography>
+                    }
+                    secondary={
+                        <Typography variant="body2" color="textSecondary">
+                            {`Average Cost: $${holding.average_cost_per_unit.toFixed(2)}`}
+                        </Typography>
+                    }
+                />
+                <ListItemText
+                    primary={
+                        <Typography
+                            variant="subtitle1"
+                            sx={{ color: profitLoss >= 0 ? "green" : "red", fontWeight: "bold" }}
+                        >
+                            {loading ? "Loading..." : (error ? "Error" : `Current Value: $${currentValue.toFixed(2)}`)}
+                        </Typography>
+                    }
+                    secondary={
+                        <Typography
+                            variant="body2"
+                            sx={{ color: profitLoss >= 0 ? "green" : "red", fontWeight: "bold" }}
+                        >
+                            {loading ? "Loading..." : (error ? error : `Profit/Loss: $${profitLoss} (${percentGain}%)`)}
+                        </Typography>
+                    }
+                />
+            </Box>
+            <Button
+                variant="contained"
+                color="error"
+                sx={{ marginLeft: 2, fontWeight: "bold" }}
+                onClick={() => handleSell(symbol)} // Define `handleSell` in your component
+            >
+                Sell
+            </Button>
         </Card>
     </ListItem>
+
 }
 
 
@@ -178,7 +225,7 @@ export default function AccountCard({ account }) {
                                 Assets
                             </Typography>
                             <List>
-                                {Object.entries(account.assets).map(([symbol, holding]) => <HoldingListItem symbol={symbol} holding={holding}/>)}
+                                {Object.entries(account.assets).map(([symbol, holding]) => <HoldingListItem symbol={symbol} holding={holding} accountId = {account.id}/>)}
                             </List>
                         </>
                     )}
