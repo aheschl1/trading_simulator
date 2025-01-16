@@ -26,6 +26,7 @@ pub fn run() {
             functions::market::get_time_series_monthly_full,
             functions::market::get_time_series_intraday,
             functions::market::get_tickers,
+            functions::market::get_current_price,
             functions::trading::purchase_shares,
             functions::trading::sell_shares,
             functions::preferences::get_favorite_tickers,

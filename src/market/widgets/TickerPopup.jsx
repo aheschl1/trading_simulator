@@ -3,22 +3,20 @@ import { useEffect, useState } from "react";
 import { useTicker } from "../context/TickerContext";
 import TickerChart from "./TickerChart";
 import { useSimulatedDate } from "../../contexts/SimulatedDateContext";
+import useCurrentPrice from "../hooks/useCurrentPrice";
 
 export default function TickerPopup({open, setOpen, purchase, loadingPurchase}){
 
     let [lastUpdated, setLastUpdated] = useState(null)
-    let [currentPrice, setCurrentPrice] = useState(null)
 
     let { symbol, intradayData } = useTicker();
     let { simulatedDate } = useSimulatedDate();
+    let { currentPrice, loading: currentPriceLoading, error: currentPriceError} = useCurrentPrice(symbol, simulatedDate);
 
     useEffect(()=>{
         if(!intradayData)
             return
         setLastUpdated(new Date(intradayData.last_refreshed).toLocaleString())
-        setCurrentPrice(
-            intradayData.entries.filter(entry => new Date(entry.date) <= simulatedDate).slice(-1)[0].close
-        )
     }, [intradayData])
     
 
@@ -32,7 +30,7 @@ export default function TickerPopup({open, setOpen, purchase, loadingPurchase}){
                 Last Updated: {lastUpdated}
             </Typography>
             <Typography variant="body1">
-                Current Price: ${currentPrice}
+                Current Price: {currentPriceLoading ? "Loading..." : currentPriceError ? "Error" : `$${currentPrice}`}
             </Typography>
             <Button
                 variant="contained"

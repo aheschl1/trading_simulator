@@ -1,5 +1,5 @@
 use alphavantage::{cache_enabled::{tickers::SearchResults, time_series::TimeSeries}, time_series::IntradayInterval};
-use chrono::{format, DateTime, FixedOffset};
+use chrono::{format::{self, Fixed}, DateTime, FixedOffset};
 use tauri::{self, State};
 
 use crate::state::AppState;
@@ -47,4 +47,13 @@ pub async fn get_tickers(state: State<'_, AppState>, query: String) -> Result<Se
         .get_tickers(&query).await
         .map_err(|e| format!("{:?}", e))?;
     Ok(tickers)
+}
+
+#[tauri::command]
+pub async fn get_current_price(state: State<'_, AppState>, symbol: String, date_limit: DateTime<FixedOffset>) -> Result<f64, String> {
+    let price = 
+        state.broker.lock().await
+        .get_price(&symbol, Some(date_limit)).await
+        .map_err(|e| format!("{:?}", e))?;
+    Ok(price)
 }

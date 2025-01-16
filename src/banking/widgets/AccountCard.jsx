@@ -10,6 +10,7 @@ import { useAccounts } from "../context/AccountContext";
 import useCurrentValue from "../hooks/useCurrentValue";
 import { useSimulatedDate } from "../../contexts/SimulatedDateContext";
 import sellShares from "../../market/trading/sellStock";
+import useCurrentPrice from "../../market/hooks/useCurrentPrice";
 
 // Utility to convert ISO timestamp to MM/DD/YYYY
 const convertToMMDDYYYY = (isoTimestamp) => {
@@ -66,6 +67,7 @@ const HoldingListItem = ({ symbol, holding, accountId }) => {
     const { simulatedDate } = useSimulatedDate();
     const { currentValue, loading, error } = useCurrentValue(symbol, holding.quantity, simulatedDate);
     const { fetchAccounts } = useAccounts();
+    let { currentPrice, loading: currentPriceLoading, error: currentPriceError} = useCurrentPrice(symbol, simulatedDate);
 
     const profitLoss = (currentValue - holding.average_cost_per_unit * holding.quantity).toFixed(2);
     const percentGain = ((profitLoss / (holding.average_cost_per_unit * holding.quantity)) * 100).toFixed(2);
@@ -115,6 +117,13 @@ const HoldingListItem = ({ symbol, holding, accountId }) => {
                     secondary={
                         <Typography variant="body2" color="textSecondary">
                             {`Average Cost: $${holding.average_cost_per_unit.toFixed(2)}`}
+                        </Typography>
+                    }
+                />
+                <ListItemText
+                    secondary={
+                        <Typography variant="body2" color="textSecondary">
+                            {currentPriceLoading ? "Loading..." : currentPriceError ? "Error" : `Current Share Value: $${currentPrice}`}
                         </Typography>
                     }
                 />
