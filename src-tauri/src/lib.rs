@@ -20,6 +20,7 @@ pub fn run() {
             functions::banking::create_checking_account,
             functions::banking::create_investment_account,
             functions::banking::add_funds,
+            functions::banking::get_current_value,
             functions::market::get_time_series_daily_full,
             functions::market::get_time_series_weekly_full,
             functions::market::get_time_series_monthly_full,

@@ -1,4 +1,5 @@
 use crate::state::AppState;
+use chrono::{DateTime, FixedOffset};
 use tauri::State;
 use trading_engine::bank::accounts::{Account, AccountType, CheckingAccount, InvestmentAccount};
 
@@ -75,4 +76,17 @@ pub async fn add_funds(state: State<'_, AppState>, id: u32, amount: f64, account
     drop(bank);
     let _ = state.save().await.map_err(|e| e.to_string())?;
     Ok(())
+}
+
+#[tauri::command]
+pub async fn get_current_value(state: State<'_, AppState>, symbol: String, quantity: f64, date_limit: DateTime<FixedOffset>) -> Result<f64, String> {
+    let value = state
+        .broker
+        .lock()
+        .await
+        .get_current_value(&symbol, quantity, Some(date_limit))
+        .await
+        .map_err(|e| e.to_string())?;
+
+    Ok(value)
 }

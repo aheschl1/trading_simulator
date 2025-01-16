@@ -7,6 +7,8 @@ import { invoke } from "@tauri-apps/api/core";
 import { useState } from "react";
 import { message } from '@tauri-apps/plugin-dialog';
 import { useAccounts } from "../context/AccountContext";
+import useCurrentValue from "../hooks/useCurrentValue";
+import { useSimulatedDate } from "../../contexts/SimulatedDateContext";
 
 // Utility to convert ISO timestamp to MM/DD/YYYY
 const convertToMMDDYYYY = (isoTimestamp) => {
@@ -54,6 +56,49 @@ const TransactionListItem = ({ transaction }) => {
         </ListItem>
     );
 };
+
+const HoldingListItem = ({ symbol, holding }) => {
+
+    const { simulatedDate } = useSimulatedDate();
+    const { currentValue, loading, error } = useCurrentValue(symbol, holding.quantity, simulatedDate);
+
+    return <ListItem key={symbol} sx={{ padding: 0 }}>
+        <Card
+            sx={{
+                width: "100%",
+                marginBottom: 2,
+                padding: 2,
+                boxShadow: 2,
+                borderRadius: 2
+            }}
+        >
+            <ListItemText
+                primary={
+                    <Typography variant="subtitle1" fontWeight="bold">
+                        {`${holding.quantity} shares of ${symbol}`}
+                    </Typography>
+                }
+                secondary={
+                    <Typography variant="body2" color="textSecondary">
+                        {`Average Cost: $${holding.average_cost_per_unit.toFixed(2)}`}
+                    </Typography>
+                }
+            />
+            <ListItemText
+                primary={
+                    <Typography variant="subtitle1">
+                        {loading ? "Loading..." : (error ? "Error" : `Current Value: $${currentValue.toFixed(2)}`)}
+                    </Typography>
+                }
+                secondary={
+                    <Typography variant="body2" color="textSecondary">
+                        {loading ? "Loading..." : (error ? error : `Profit/Loss: $${(currentValue - holding.average_cost_per_unit * holding.quantity).toFixed(2)}`)}
+                    </Typography>
+                }
+            />
+        </Card>
+    </ListItem>
+}
 
 
 // Function to add funds to an account
@@ -133,32 +178,7 @@ export default function AccountCard({ account }) {
                                 Assets
                             </Typography>
                             <List>
-                                {Object.entries(account.assets).map(([symbol, holding]) => (
-                                    <ListItem key={symbol} sx={{ padding: 0 }}>
-                                        <Card
-                                            sx={{
-                                                width: "100%",
-                                                marginBottom: 2,
-                                                padding: 2,
-                                                boxShadow: 2,
-                                                borderRadius: 2
-                                            }}
-                                        >
-                                            <ListItemText
-                                                primary={
-                                                    <Typography variant="subtitle1" fontWeight="bold">
-                                                        {`${holding.quantity} shares of ${symbol}`}
-                                                    </Typography>
-                                                }
-                                                secondary={
-                                                    <Typography variant="body2" color="textSecondary">
-                                                        {`Average Cost: $${holding.average_cost_per_unit.toFixed(2)}`}
-                                                    </Typography>
-                                                }
-                                            />
-                                        </Card>
-                                    </ListItem>
-                                ))}
+                                {Object.entries(account.assets).map(([symbol, holding]) => <HoldingListItem symbol={symbol} holding={holding}/>)}
                             </List>
                         </>
                     )}
