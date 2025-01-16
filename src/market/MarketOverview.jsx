@@ -4,15 +4,16 @@ import "./MarketOverview.css";
 import TickerOverview from "./widgets/TickerOverview";
 import { TextField, Card, CardContent, Typography } from '@mui/material';
 import useSearchResults from "./hooks/useSearchResults";
-import useFavoriteTickers, { addFavoriteTicker } from "./hooks/useFavoriteTickers";
+import { useFavorites } from "./context/FavoritesContext";
 
 
 export default function MarketOverview() {
 
     const [searchValue, setSearchValue] = useState("");
     const {searchResults, loading: searchLoading, error: searchError} = useSearchResults(searchValue);
-    const {favoriteTickers, loading: favoriteLoading, error: favoriteError, setFavoriteTickers} = useFavoriteTickers();
+    const {favoriteTickers, loading: favoriteLoading, error: favoriteError, addFavorite} = useFavorites();
 
+    console.log(favoriteError);
 
     return <div className="market-overview">
         <div className="search">
@@ -38,14 +39,13 @@ export default function MarketOverview() {
                         borderRadius: 2,
                         transition: "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
                         '&:hover': {
-                            transform: "scale(1.02)",
-                            boxShadow: 3,
+                            transform: "scale(1.01)",
+                            boxShadow: 2,
                         },
                         minHeight: 120,
                     }}
                     onClick={() => {
-                        addFavoriteTicker(result.symbol);
-                        setFavoriteTickers([...favoriteTickers, result]);
+                        addFavorite(result.symbol);
                     }}
                 >
                     <CardContent>

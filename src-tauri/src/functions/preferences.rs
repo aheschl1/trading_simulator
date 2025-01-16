@@ -16,3 +16,12 @@ pub async fn add_favorite_ticker(state: State<'_, AppState>, symbol: String) -> 
     let _ = state.save().await;
     Ok(())
 }
+
+#[tauri::command]
+pub async fn remove_favorite_ticker(state: State<'_, AppState>, symbol: String) -> Result<(), String> {
+    let mut favorite_tickers = state.favorite_tickers.lock().await;
+    favorite_tickers.retain(|ticker| ticker.symbol != symbol);
+    drop(favorite_tickers);
+    let _ = state.save().await;
+    Ok(())
+}

@@ -5,6 +5,7 @@ import {AccountsProvider} from "./banking/context/AccountContext";
 import { SimulatedDateProvider, useSimulatedDate } from "./contexts/SimulatedDateContext";
 import { useEffect, useState } from "react";
 import DigitalClock from "./widgets/Clock";
+import { FavoritesProvider } from "./market/context/FavoritesContext";
 
 function App() {
   return (
@@ -16,7 +17,9 @@ function App() {
           <BankingInfo />
         </div>
         <div className="bottom-section">
-          <MarketOverview />
+          <FavoritesProvider>
+            <MarketOverview />
+          </FavoritesProvider>
         </div>
       </div>
       </AccountsProvider>

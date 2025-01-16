@@ -32,6 +32,7 @@ export default function useSearchResults(searchValue){
 
     useEffect(() => {
         const fetchSearchResults = async () => {
+            setError(null);
             setLoading(true);
             try{
                 const results = await invoke("get_tickers", { query: searchValue });

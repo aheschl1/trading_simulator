@@ -28,6 +28,7 @@ pub fn run() {
             functions::market::get_tickers,
             functions::preferences::get_favorite_tickers,
             functions::preferences::add_favorite_ticker,
+            functions::preferences::remove_favorite_ticker,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -19,6 +19,7 @@ import SelectAccountDialog from "../../banking/account_helpers/selectAccount";
 import { useAccounts } from "../../banking/context/AccountContext";
 import purchaseShares from "../trading/buyStock";
 import { useSimulatedDate } from "../../contexts/SimulatedDateContext";
+import { useFavorites } from "../context/FavoritesContext";
 
 // Register required components
 ChartJS.register(
@@ -38,7 +39,7 @@ export default function TickerOverview() {
   const [loadingPurchase, setLoadingPurchase] = useState(false);
   const {fetchAccounts} = useAccounts();
   const [purchasing, setPurchasing] = useState(false);
-
+  let {removeFavorite} = useFavorites();
   let {simulatedDate} = useSimulatedDate()
 
   let {
@@ -107,8 +108,18 @@ export default function TickerOverview() {
         <Button variant="contained" color="primary" onClick={() => setPopupOpen(true)} style={{
           height: "min-content",
         }}>
-          Expand
+          More
         </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            removeFavorite(symbol);
+          }}
+          style={{
+            height: "min-content",
+          }}
+        >Unpin</Button>
       </div>
       {/* Loading and Error Handling */}
       {isLoading && <p>Loading...</p>}
