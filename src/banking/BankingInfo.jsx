@@ -18,17 +18,19 @@ import { message } from '@tauri-apps/plugin-dialog';
 import { useAccounts } from './context/AccountContext';
 
 import createAccount from './account_helpers/createAccount';
+import { IconButton } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 
-export default function BankingInfo(){
+export default function BankingInfo() {
 
-    const {addCheckingAccount, addInvestmentAccount} = createAccount();
+    const { addCheckingAccount, addInvestmentAccount } = createAccount();
 
-    const { 
-        checkingAccounts, 
-        investmentAccounts, 
-        loading, 
-        error, 
-        fetchAccounts 
+    const {
+        checkingAccounts,
+        investmentAccounts,
+        loading,
+        error,
+        fetchAccounts
     } = useAccounts();
 
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -62,26 +64,35 @@ export default function BankingInfo(){
         <div className='bankingInfo'>
             {loading && <p>Loading accounts...</p>}
             {error && <p className="error">{error}</p>}
-
-             <div className="cardSlot">
-                {checkingAccounts.length === 0 && <p className="noAccounts">No checking accounts yet</p>}
-                {checkingAccounts.map((account) => <AccountCard key={account.id} account={account} />)}
+            <div className="cardSlot">
                 {investmentAccounts.length === 0 && <p className="noAccounts">No investment accounts yet</p>}
                 {investmentAccounts.map((account) => <AccountCard key={account.id} account={account} />)}
+                {checkingAccounts.length === 0 && <p className="noAccounts">No checking accounts yet</p>}
+                {checkingAccounts.map((account) => <AccountCard key={account.id} account={account} />)}
+                <IconButton
+                    onClick={() => setDialogOpen(true)}
+                    color="primary"
+                    aria-label="Add Account"
+                    disabled={loading}
+                    title="Add Account"
+                    sx={{
+                        backgroundColor: 'primary.main',
+                        color: 'white',
+                        '&:hover': {
+                            backgroundColor: 'primary.dark',
+                        },
+                        width: 50,
+                        height: 50,
+                        borderRadius: '50%',
+                    }}
+                >
+                    <AddIcon />
+                </IconButton>
             </div>
-            <Button
-                className="actionButton"
-                variant="contained"
-                color="primary"
-                onClick={() => setDialogOpen(true)}
-                disabled={loading}
-            >
-                Add Account
-            </Button>
-            
-            {/* Add account dialog*/ }
-            <Dialog open={dialogOpen} onClose={()=>setDialogOpen(false)}>
-            <DialogTitle>Add New Account</DialogTitle>
+
+            {/* Add account dialog*/}
+            <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+                <DialogTitle>Add New Account</DialogTitle>
                 <DialogContent>
                     <Select
                         fullWidth
