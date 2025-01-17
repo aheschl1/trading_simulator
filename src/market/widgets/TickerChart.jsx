@@ -8,15 +8,18 @@ export default function TickerChart() {
   const [timeFrame, setTimeFrame] = useState("1d");
   const [chartData, setChartData] = useState(null);
   const { 
-    intradayData, 
+    intradayFiveMinuteData, 
     dailyData, 
     weeklyData, 
     monthlyData, 
-    intradayLoading, 
+    intradayFiveMinuteLoading, 
     dailyLoading, 
     weeklyLoading, 
     monthlyLoading, 
-    intradayError, 
+    intradayFiveMinuteError, 
+    intradaySixtyMinuteError,
+    intradaySixtyMinuteData,
+    intradaySixtyMinuteLoading,
     dailyError, 
     weeklyError, 
     monthlyError, 
@@ -33,11 +36,11 @@ export default function TickerChart() {
   const fiveYearThreshold = new Date(simulatedDate.getTime() - 5 * 365 * 24 * 60 * 60 * 1000);
 
   const timeSeries = {
-    "1d": intradayLoading ? undefined : intradayData.entries.filter((entry) => {
+    "1d": intradayFiveMinuteLoading ? undefined : intradayFiveMinuteData.entries.filter((entry) => {
       const entryDate = new Date(entry.date); 
       return oneDayThreshold <= entryDate && entryDate <= simulatedDate;
     }),
-    "1w": intradayLoading ? undefined : intradayData.entries.filter((entry) => {
+    "1w": intradaySixtyMinuteLoading ? undefined : intradaySixtyMinuteData.entries.filter((entry) => {
       const entryDate = new Date(entry.date); 
       return weekThreshold <= entryDate && entryDate <= simulatedDate;
     }),
@@ -45,7 +48,7 @@ export default function TickerChart() {
       const entryDate = new Date(entry.date); 
       return monthThreshold <= entryDate && entryDate <= simulatedDate;
     }),
-    "3m": weeklyLoading ? undefined : weeklyData.entries.filter((entry) => {
+    "3m": dailyLoading ? undefined : dailyData.entries.filter((entry) => {
       const entryDate = new Date(entry.date); 
       return threeMonthThreshold <= entryDate && entryDate <= simulatedDate;
     }),
@@ -59,8 +62,8 @@ export default function TickerChart() {
     }),
   }[timeFrame];
 
-  const isLoading = intradayLoading || dailyLoading || weeklyLoading || monthlyLoading;
-  const hasError = intradayError || dailyError || weeklyError || monthlyError;
+  const isLoading = intradayFiveMinuteLoading || intradaySixtyMinuteLoading || dailyLoading || weeklyLoading || monthlyLoading;
+  const hasError = intradayFiveMinuteError || intradaySixtyMinuteError || dailyError || weeklyError || monthlyError;
   const noData = timeSeries && timeSeries.length === 0;
 
   useEffect(() => {
@@ -74,6 +77,7 @@ export default function TickerChart() {
             borderColor: noData ? "rgba(169, 169, 169, 1)" : "rgba(75, 192, 192, 1)", // Grayed out if no data
             backgroundColor: noData ? "rgba(169, 169, 169, 0.2)" : "rgba(75, 192, 192, 0.2)", // Grayed out if no data
             fill: false,
+            pointRadius: 0,
           },
         ],
       });
@@ -89,6 +93,11 @@ export default function TickerChart() {
           data={chartData}
           className="chart"
           options={{
+            interaction: {
+              mode: "index", // Activates tooltip for the nearest x-axis point
+              axis: "x", // Cursor movement along the x-axis triggers tooltips
+              intersect: false, // Allows hovering even if not directly on a point
+            },
             responsive: true,
             maintainAspectRatio: true,
             plugins: {
@@ -99,6 +108,9 @@ export default function TickerChart() {
             scales: {
               x: {
                 display: false,
+                ticks: {
+                  maxTicksLimit: 10, // Limits the number of ticks
+                },
               },
               y: {
                 title: {

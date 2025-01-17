@@ -11,21 +11,21 @@ export default function TickerPopup({ open, setOpen, purchase, loadingPurchase }
 
     let [lastUpdated, setLastUpdated] = useState(null)
 
-    let { symbol, intradayData, tickerDetails, tickerDetailsLoading, tickerDetailsError } = useTicker();
+    let { symbol, intradayFiveMinuteData, tickerDetails, tickerDetailsLoading, tickerDetailsError } = useTicker();
     let { simulatedDate } = useSimulatedDate();
     let { currentPrice, loading: currentPriceLoading, error: currentPriceError } = useCurrentPrice(symbol, simulatedDate);
     let [detailsOpen, setDetailsOpen] = useState(false);
 
     useEffect(() => {
-        if (!intradayData)
+        if (!intradayFiveMinuteData)
             return
-        setLastUpdated(new Date(intradayData.last_refreshed).toLocaleString())
-    }, [intradayData])
+        setLastUpdated(new Date(intradayFiveMinuteData.last_refreshed).toLocaleString())
+    }, [intradayFiveMinuteData])
 
 
     return <Dialog open={open} fullWidth maxWidth="md" onClose={() => setOpen(false)}>
         <DialogTitle>{symbol}</DialogTitle>
-        {intradayData &&
+        {intradayFiveMinuteData &&
             <DialogContent>
                 <TickerChart />
                 <div style={{ height: "16px" }} />
