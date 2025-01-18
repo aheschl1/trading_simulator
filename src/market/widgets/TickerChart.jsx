@@ -36,27 +36,27 @@ export default function TickerChart() {
   const fiveYearThreshold = new Date(simulatedDate.getTime() - 5 * 365 * 24 * 60 * 60 * 1000);
 
   const timeSeries = {
-    "1d": intradayFiveMinuteLoading ? undefined : intradayFiveMinuteData.entries.filter((entry) => {
+    "1d": (intradayFiveMinuteLoading || intradayFiveMinuteError) ? undefined : intradayFiveMinuteData.entries.filter((entry) => {
       const entryDate = new Date(entry.date); 
       return oneDayThreshold <= entryDate && entryDate <= simulatedDate;
     }),
-    "1w": intradaySixtyMinuteLoading ? undefined : intradaySixtyMinuteData.entries.filter((entry) => {
+    "1w": (intradaySixtyMinuteLoading || intradaySixtyMinuteError) ? undefined : intradaySixtyMinuteData.entries.filter((entry) => {
       const entryDate = new Date(entry.date); 
       return weekThreshold <= entryDate && entryDate <= simulatedDate;
     }),
-    "1m": dailyLoading ? undefined : dailyData.entries.filter((entry) => {
+    "1m": (dailyLoading || dailyError) ? undefined : dailyData.entries.filter((entry) => {
       const entryDate = new Date(entry.date); 
       return monthThreshold <= entryDate && entryDate <= simulatedDate;
     }),
-    "3m": dailyLoading ? undefined : dailyData.entries.filter((entry) => {
+    "3m": (dailyLoading || dailyError) ? undefined : dailyData.entries.filter((entry) => {
       const entryDate = new Date(entry.date); 
       return threeMonthThreshold <= entryDate && entryDate <= simulatedDate;
     }),
-    "1y": weeklyLoading ? undefined : weeklyData.entries.filter((entry) => {
+    "1y": (weeklyLoading || weeklyError) ? undefined : weeklyData.entries.filter((entry) => {
       const entryDate = new Date(entry.date); 
       return yearThreshold <= entryDate && entryDate <= simulatedDate;
     }),
-    "5y": monthlyLoading ? undefined : monthlyData.entries.filter((entry) => {
+    "5y": (monthlyLoading || monthlyError) ? undefined : monthlyData.entries.filter((entry) => {
       const entryDate = new Date(entry.date); 
       return fiveYearThreshold <= entryDate && entryDate <= simulatedDate;
     }),

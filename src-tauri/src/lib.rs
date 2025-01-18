@@ -33,6 +33,7 @@ pub fn run() {
             functions::preferences::get_favorite_tickers,
             functions::preferences::add_favorite_ticker,
             functions::preferences::remove_favorite_ticker,
+            functions::preferences::get_simulated_date_utc
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

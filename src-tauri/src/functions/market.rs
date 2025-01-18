@@ -128,10 +128,11 @@ pub async fn get_ticker(state: State<'_, AppState>, symbol: String) -> Result<En
 }
 
 #[tauri::command]
-pub async fn get_current_price(state: State<'_, AppState>, symbol: String, date_limit: DateTime<FixedOffset>) -> Result<f64, String> {
+pub async fn get_current_price(state: State<'_, AppState>, symbol: String) -> Result<f64, String> {
+    let date_limit = state.get_simulated_date_utc();
     let price = 
         state.broker.lock().await
-        .get_price(&symbol, Some(date_limit)).await
+        .get_price(&symbol, Some(date_limit.into())).await
         .map_err(|e| format!("{:?}", e))?;
     Ok(price)
 }

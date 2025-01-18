@@ -79,12 +79,13 @@ pub async fn add_funds(state: State<'_, AppState>, id: u32, amount: f64, account
 }
 
 #[tauri::command]
-pub async fn get_current_value(state: State<'_, AppState>, symbol: String, quantity: f64, date_limit: DateTime<FixedOffset>) -> Result<f64, String> {
+pub async fn get_current_value(state: State<'_, AppState>, symbol: String, quantity: f64) -> Result<f64, String> {
+    let date_limit = state.get_simulated_date_utc();
     let value = state
         .broker
         .lock()
         .await
-        .get_current_value(&symbol, quantity, Some(date_limit))
+        .get_current_value(&symbol, quantity, Some(date_limit.into()))
         .await
         .map_err(|e| e.to_string())?;
 

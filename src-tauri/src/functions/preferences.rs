@@ -1,3 +1,4 @@
+use chrono::{DateTime, FixedOffset, Utc};
 use tauri::State;
 use trading_engine::bank::stock::Asset;
 
@@ -24,4 +25,10 @@ pub async fn remove_favorite_ticker(state: State<'_, AppState>, symbol: String) 
     drop(favorite_tickers);
     let _ = state.save().await;
     Ok(())
+}
+
+#[tauri::command]
+pub async fn get_simulated_date_utc(state: State<'_, AppState>) -> Result<DateTime<Utc>, String> {
+    // convert to fixed offset
+    Ok(state.get_simulated_date_utc())
 }

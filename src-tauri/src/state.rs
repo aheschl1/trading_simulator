@@ -1,5 +1,6 @@
 use crate::utils;
 use std::{fs, ops::Deref, str::FromStr, sync::Arc};
+use chrono::{DateTime, Utc};
 use tauri::{async_runtime::Mutex};
 use trading_engine::{bank::Bank, brokerage::Broker};
 use alphavantage::cache_enabled::client::Client;
@@ -64,4 +65,13 @@ impl AppState {
         fs::write(&favorite_tickers_path, favorite_tickers_json)?;
         Ok(())
     }
+
+
+    /**
+     * The simulation runs 24 hours behind the current date
+     */
+    pub fn get_simulated_date_utc(&self) -> DateTime<Utc> {
+        let now = chrono::Utc::now();
+        now - chrono::Duration::days(1)
+    } 
 }
