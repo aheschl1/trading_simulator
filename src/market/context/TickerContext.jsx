@@ -10,6 +10,7 @@ import {
 import { useContext } from "react";
 import { useSimulatedDate } from "../../contexts/SimulatedDateContext";
 import useTickerDetails from "../hooks/useTickerDetails";
+import useCompanyProfile from "../hooks/useCompanyProfile";
 
 
 const TickerContext = createContext()
@@ -20,6 +21,7 @@ export function TickerProvider({ children, symbol}) {
     const { data: dailyData, loading: dailyLoading, error: dailyError } = getTimeSeriesDailyFull(symbol);
     const { data: weeklyData, loading: weeklyLoading, error: weeklyError } = getTimeSeriesWeeklyFull(symbol);
     const { data: monthlyData, loading: monthlyLoading, error: monthlyError } = getTimeSeriesMonthlyFull(symbol);
+    const { companyProfile, loading: companyProfileLoading, error: companyProfileError } = useCompanyProfile(symbol);
     const { tickerDetails, loading: tickerDetailsLoading, error: tickerDetailsError } = useTickerDetails(symbol);
 
     const isLoading =intradayFiveMinuteLoading || dailyLoading || weeklyLoading || monthlyLoading;
@@ -46,7 +48,10 @@ export function TickerProvider({ children, symbol}) {
         symbol,
         tickerDetails,
         tickerDetailsLoading,
-        tickerDetailsError
+        tickerDetailsError,
+        companyProfile,
+        companyProfileLoading,
+        companyProfileError
     }}>{children}</TickerContext.Provider>
 }
 

@@ -15,6 +15,7 @@ pub struct AppState {
     pub broker: Mutex<Broker>,
     pub bank: Arc<Mutex<Bank>>,
     pub favorite_tickers: Mutex<Vec<Asset>>,
+    pub finnhub_client: finnhub_rs::client::Client,
 }
 
 impl AppState {
@@ -40,13 +41,16 @@ impl AppState {
         };
         // make the broker
         let key = env::var("ALPHAVANTAGE_TOKEN").expect("ALPHAVANTAGE_TOKEN must be set");
+        let finnhub_key = env::var("FINNHUB_TOKEN").expect("FINNHUB_TOKEN must be set");
         let client = Client::new(&key);
+        let finngub_client = finnhub_rs::client::Client::new(finnhub_key);
         let broker = Broker::new(client, bank.clone());
 
         AppState {
             broker: Mutex::new(broker),
             bank: bank.clone(),
-            favorite_tickers: Mutex::new(favorite_tickers)
+            favorite_tickers: Mutex::new(favorite_tickers),
+            finnhub_client: finngub_client,
         }
     }
 

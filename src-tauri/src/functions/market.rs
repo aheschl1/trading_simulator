@@ -2,6 +2,8 @@ use std::thread::spawn;
 
 use alphavantage::{cache_enabled::{tickers::{Entry, SearchResults}, time_series::TimeSeries}, time_series::IntradayInterval};
 use chrono::{format::{self, Fixed}, DateTime, FixedOffset};
+use disk_cache::cache_async;
+use finnhub_rs::types::CompanyProfile;
 use tauri::{self, State};
 
 use crate::{state::AppState, utils::expand_tilde};
@@ -135,4 +137,21 @@ pub async fn get_current_price(state: State<'_, AppState>, symbol: String) -> Re
         .get_price(&symbol, Some(date_limit.into())).await
         .map_err(|e| format!("{:?}", e))?;
     Ok(price)
+}
+
+/// This is a cached call to the finnhub company profile
+#[cache_async(cache_root = "~/.cache/finnhub/company_profile/{symbol}", invalidate_rate = 1210000)]
+async fn get_company_profile_cached(state: State<'_, AppState>, symbol: String) -> Result<CompanyProfile, String> {
+    let company_profile = 
+        state.finnhub_client
+        .company_profile2(finnhub_rs::types::ProfileToParam::Symbol, symbol).await
+        .map_err(|e| format!("{:?}", e))?;
+    Ok(company_profile.0)
+}
+
+#[tauri::command]
+pub async fn get_company_profile(state: State<'_, AppState>, symbol: String) -> Result<CompanyProfile, String> {
+    let result = get_company_profile_cached(state, symbol)
+        .await.map_err(|e| format!("{e:?}"))??;
+    Ok(result)
 }
