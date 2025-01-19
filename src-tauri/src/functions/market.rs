@@ -155,3 +155,26 @@ pub async fn get_company_profile(state: State<'_, AppState>, symbol: String) -> 
         .await.map_err(|e| format!("{e:?}"))??;
     Ok(result)
 }
+
+/// Get the company news for a given symbol, cached
+#[cache_async(cache_root = "~/.cache/finnhub/company_news/{symbol}", invalidate_rate = 86400)]
+async fn get_company_news_cached(state: State<'_, AppState>, symbol: String) -> Result<Vec<finnhub_rs::types::CompanyNews>, String> {
+    let simulated_date = state.get_simulated_date_utc();
+    // 3 days ago
+    let from = simulated_date - chrono::Duration::days(3);
+    let from: String = from.format("%Y-%m-%d").to_string();
+    let to = simulated_date.format("%Y-%m-%d").to_string();
+
+    let news = 
+        state.finnhub_client
+        .company_news(symbol, from, to).await
+        .map_err(|e| format!("{:?}", e))?;
+    Ok(news.0)
+}
+
+#[tauri::command]
+pub async fn get_company_news(state: State<'_, AppState>, symbol: String) -> Result<Vec<finnhub_rs::types::CompanyNews>, String> {
+    let result = get_company_news_cached(state, symbol)
+        .await.map_err(|e| format!("{e:?}"))??;
+    Ok(result)
+}

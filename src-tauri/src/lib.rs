@@ -29,6 +29,7 @@ pub fn run() {
             functions::market::get_ticker,
             functions::market::get_current_price,
             functions::market::get_company_profile,
+            functions::market::get_company_news,
             functions::trading::purchase_shares,
             functions::trading::sell_shares,
             functions::preferences::get_favorite_tickers,
