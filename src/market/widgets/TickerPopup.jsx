@@ -58,31 +58,20 @@ const CompanyNewsSection = ({ symbol }) => {
                                 <Grid item xs={news.image ? 8 : 12}>
                                     <CardContent>
                                         <Typography variant="body1" gutterBottom>
-                                            <strong>
-                                                <Link
-                                                    href={news.sourceUrl}
-                                                    target="_blank"
-                                                    rel="noopener"
-                                                    underline="hover"
-                                                >
-                                                    {news.source}
-                                                </Link>
-                                            </strong>{" "}
-                                            &nbsp;-&nbsp;
                                             <Link
                                                 href={news.url}
                                                 target="_blank"
                                                 rel="noopener"
                                                 underline="hover"
                                             >
-                                                {news.headline}
+                                                {news.source + " - " + news.headline}
                                             </Link>
                                         </Typography>
                                         <Typography variant="body2" gutterBottom>
                                             {news.summary}
                                         </Typography>
                                         <Typography variant="caption" color="text.secondary">
-                                            {new Date(news.datetime).toLocaleString()}
+                                            {new Date(news.datetime*1000).toLocaleString()}
                                         </Typography>
                                     </CardContent>
                                 </Grid>

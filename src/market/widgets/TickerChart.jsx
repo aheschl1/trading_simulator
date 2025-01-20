@@ -3,6 +3,7 @@ import { Line } from "react-chartjs-2";
 import { useTicker } from "../context/TickerContext";
 import "./TickerChart.css";
 import { useSimulatedDate } from "../../contexts/SimulatedDateContext";
+import { Typography } from "@mui/material";
 
 export default function TickerChart() {
   const [timeFrame, setTimeFrame] = useState("1d");
@@ -87,7 +88,11 @@ export default function TickerChart() {
   return (
     <div className=".parent">
       {noData ? (
-        <div className="no-data-message">No data available for this range</div>
+        <Typography 
+          variant="h6" 
+          fontSize="18px"
+          textAlign="center" 
+        >No data available for this range</Typography>
       ) : chartData ? (
         <Line
           data={chartData}

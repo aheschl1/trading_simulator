@@ -17,16 +17,6 @@
     flex: 1;
 }
 
-.no-data-message{
-    text-align: center;
-    height: 100%;
-    width: 100%;
-    font-size: 1.5rem;
-    margin-bottom: 50px;
-    color: #000;
-    flex: 2
-}
-
 .chart {
     flex: 2;
 }
