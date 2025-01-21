@@ -7,7 +7,7 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend,
+  Legend
 } from "chart.js";
 import "./TickerOverview.css";
 import TickerPopup from "./TickerPopup";
@@ -20,6 +20,9 @@ import { useAccounts } from "../../banking/context/AccountContext";
 import purchaseShares from "../trading/buyStock";
 import { useSimulatedDate } from "../../contexts/SimulatedDateContext";
 import { useFavorites } from "../context/FavoritesContext";
+import { Box, IconButton } from "@mui/material";
+import OpenInFullIcon from '@mui/icons-material/OpenInFull';
+import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined'; // Unpinned appearance
 
 // Register required components
 ChartJS.register(
@@ -35,25 +38,26 @@ ChartJS.register(
 export default function TickerOverview() {
   const [popupOpen, setPopupOpen] = useState(false);
   const [isSelectingAccount, setIsSelectingAccount] = useState(false);
-  const {selectedAccount, setSelectedAccount} = useAccounts();
+  const { selectedAccount, setSelectedAccount } = useAccounts();
   const [loadingPurchase, setLoadingPurchase] = useState(false);
-  const {fetchAccounts} = useAccounts();
+  const { fetchAccounts } = useAccounts();
   const [purchasing, setPurchasing] = useState(false);
-  let {removeFavorite} = useFavorites();
-  let {simulatedDate} = useSimulatedDate()
+  let { removeFavorite } = useFavorites();
+  let { simulatedDate } = useSimulatedDate()
 
   let {
     isLoading,
     hasError,
     symbol,
+    companyProfile
   } = useTicker();
 
 
   useEffect(() => {
-    if(!purchasing){
+    if (!purchasing) {
       return;
     }
-    if(selectedAccount === undefined){
+    if (selectedAccount === undefined) {
       setIsSelectingAccount(true);
       return;
     }
@@ -62,13 +66,13 @@ export default function TickerOverview() {
   }, [purchasing, selectedAccount]);
 
   const purchase = async () => {
-    if(selectedAccount === undefined){
-      message("Please select an account to purchase shares", {"title": "Select Account", "type": "info"});
+    if (selectedAccount === undefined) {
+      message("Please select an account to purchase shares", { "title": "Select Account", "type": "info" });
       return;
     }
     // ensure it is an investment account
-    if(selectedAccount.assets === undefined){
-      message("Please select an investment account to purchase shares", {"title": "Select Investment Account", "type": "info"});
+    if (selectedAccount.assets === undefined) {
+      message("Please select an investment account to purchase shares", { "title": "Select Investment Account", "type": "info" });
       setIsSelectingAccount(true);
       return;
     }
@@ -82,7 +86,7 @@ export default function TickerOverview() {
       alert("Quantity must be greater than 0");
       return;
     }
-    try{
+    try {
       setLoadingPurchase(true);
       await purchaseShares(
         purchaseQuantity,
@@ -91,35 +95,58 @@ export default function TickerOverview() {
         simulatedDate
       )
       fetchAccounts();
-      message(`Purchased ${purchaseQuantity} shares of ${symbol}`, {"title": "Purchase Successful", "type": "info"});
+      message(`Purchased ${purchaseQuantity} shares of ${symbol}`, { "title": "Purchase Successful", "type": "info" });
     } catch (e) {
-      message(`Failed to purchase shares: ${e}`, {"title": "Purchase Failed", "type": "error"});
-    }finally{
+      message(`Failed to purchase shares: ${e}`, { "title": "Purchase Failed", "type": "error" });
+    } finally {
       setLoadingPurchase(false);
     }
-      
+
   }
 
   return (
     <div className="parent">
       {/* <h1>{symbol}</h1> */}
       <div className="header">
-        <h1>{symbol}</h1>
-        <Button variant="contained" color="primary" onClick={() => setPopupOpen(true)} style={{
-          height: "min-content",
-        }}>
-          More
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => {
-            removeFavorite(symbol);
-          }}
-          style={{
-            height: "min-content",
-          }}
-        >Unpin</Button>
+        <Box display="flex" alignItems="center">
+          {
+            companyProfile &&
+            <img
+              src={companyProfile.logo}
+              alt={`${symbol} Logo`}
+              style={{
+                maxWidth: "50px",
+                height: "auto",
+                marginRight: "16px",
+                borderRadius: "50%"
+              }}
+            />
+          }
+          <h1>{symbol}</h1>
+        </Box>
+        <Box display="flex" alignItems="end">
+          <IconButton
+            color="primary"
+            onClick={() => setPopupOpen(true)}
+            style={{
+              height: "min-content",
+            }}
+          >
+            <OpenInFullIcon />
+          </IconButton>
+          <IconButton
+            color="primary"
+            onClick={() => {
+              removeFavorite(symbol);
+            }}
+            style={{
+              height: "min-content",
+            }}
+            aria-label="Unpin content" // Accessible label for screen readers
+          >
+            <PushPinOutlinedIcon />
+          </IconButton>
+        </Box>
       </div>
       {/* Loading and Error Handling */}
       {isLoading && <p>Loading...</p>}
@@ -127,21 +154,21 @@ export default function TickerOverview() {
 
       {/* Render Chart */}
       {!isLoading && !hasError && (
-        <TickerChart/>
+        <TickerChart />
       )}
       {/* Popup */}
-      <TickerPopup open={popupOpen} setOpen={setPopupOpen} purchase={()=>{
+      <TickerPopup open={popupOpen} setOpen={setPopupOpen} purchase={() => {
         setPurchasing(true);
-      }} loadingPurchase={loadingPurchase}/>
+      }} loadingPurchase={loadingPurchase} />
       {/* Purchase account select */}
       {
-        isSelectingAccount && 
+        isSelectingAccount &&
         <SelectAccountDialog open={isSelectingAccount} onClose={(account) => {
           setIsSelectingAccount(false);
           if (account) {
             setSelectedAccount(account);
           }
-        }}/>
+        }} />
       }
     </div>
   );
