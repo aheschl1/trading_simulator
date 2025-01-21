@@ -83,7 +83,7 @@ impl AppState {
      * The simulation runs 24 hours behind the current date
      */
     pub fn get_simulated_date_utc(&self) -> DateTime<Utc> {
-        get_simulated_date_utc()
+        get_simulated_date_utc() 
     } 
 }
 

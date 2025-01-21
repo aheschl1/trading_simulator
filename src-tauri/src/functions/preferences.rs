@@ -39,9 +39,9 @@ pub async fn get_simulated_date_utc(state: State<'_, AppState>) -> Result<DateTi
 #[tauri::command]
 pub async fn refresh_intraday_cache(state: State<'_, AppState>, symbol: String) -> Result<(), String> {
     const CACHE_ROOT: &str = "~/.cache/alphavantage/get_time_series_intraday";
-    let cache_path_a = utils::expand_tilde(format!("{}/{}_ThirtyMinutes", CACHE_ROOT, symbol).as_str());
     let cache_path_b = utils::expand_tilde(format!("{}/{}_OneMinute", CACHE_ROOT, symbol).as_str());
     let cache_path_c = utils::expand_tilde(format!("{}/{}_FiveMinutes", CACHE_ROOT, symbol).as_str());
+    let cache_path_a = utils::expand_tilde(format!("{}/{}_ThirtyMinutes", CACHE_ROOT, symbol).as_str());
     let cache_path_d = utils::expand_tilde(format!("{}/{}_SixtyMinutes", CACHE_ROOT, symbol).as_str());
     // if folder exists, delete it
     let ra = std::fs::remove_dir_all(&cache_path_a);

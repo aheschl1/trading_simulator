@@ -21,7 +21,7 @@ export function SimulatedDateProvider({ children }) {
                 console.error('Failed to fetch simulated date:', error);
             }
         }
-
+ 
         fetchSimulatedDate(); // Initial fetch
 
         const interval = setInterval(fetchSimulatedDate, 60 * 1000); // Fetch every minute
@@ -30,7 +30,7 @@ export function SimulatedDateProvider({ children }) {
     }, []);
 
     return (
-        <SimulatedDateContext.Provider value={{ simulatedDate, setSimulatedDate }}>
+        <SimulatedDateContext.Provider value={{ simulatedDate }}>
             {children}
         </SimulatedDateContext.Provider>
     );

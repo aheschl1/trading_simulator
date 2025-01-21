@@ -26,14 +26,18 @@ export default function DigitalClock() {
     };
 
     const { simulatedDate } = useSimulatedDate();
-    const [displayTime, setDisplayTime] = useState(simulatedDate);
+    const [ displayTime, setDisplayTime ] = useState(simulatedDate);
 
     useEffect(() => {
-        const interval = setInterval(() => {
-            setDisplayTime((oldTime) => new Date(oldTime.getTime() + 1000)); // Add 1 second
+        const interval = setInterval(() => {     
+            setDisplayTime((oldTime) => new Date(oldTime.getTime() + 1000)); // Add 1 second 
         }, 1000);
         return () => clearInterval(interval);
     }, []);
+
+    useEffect(() => {
+        setDisplayTime(simulatedDate);
+    }, [simulatedDate] );
 
     const formatTime = (date) => {
         return date.toLocaleTimeString("en-US", {
@@ -71,7 +75,7 @@ export default function DigitalClock() {
 
             {/* Message saying - simulation 24h behind */}
             <div style={{ fontSize: "14px", marginTop: "8px" }}>
-                Simulation time is 24 hours behind real time.
+                Simulation time is {((new Date() - displayTime) / (1000 * 60 * 60)).toFixed(0)} hours behind real time.
             </div>
         </div>
     );
