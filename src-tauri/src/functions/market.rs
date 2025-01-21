@@ -98,35 +98,11 @@ pub async fn get_tickers(state: State<'_, AppState>, query: String) -> Result<Se
 #[tauri::command]
 pub async fn get_ticker(state: State<'_, AppState>, symbol: String) -> Result<Entry, String> {
     // first check the cache
-    let path = expand_tilde("~/.cache/trading_simulator/tickers")
-        .join(format!("{}.json", symbol));
-    if path.exists() {
-        let json = std::fs::read_to_string(path).map_err(|e| format!("{:?}", e))?;
-        let entry: Entry = serde_json::from_str(&json).map_err(|e| format!("{:?}", e))?;
-        return Ok(entry);
-    }
-    // no cache hit, so load the tickers and filter
-    let tickers: Vec<alphavantage::cache_enabled::tickers::Entry> = 
+    let ticker = 
         state.broker.lock().await
-        .get_tickers(&symbol).await
-        .map_err(|e| format!("{:?}", e))?
-        .entries
-        .into_iter()
-        .filter(|entry| entry.symbol == symbol)
-        .collect();
-    if tickers.len() != 1 {
-        return Err(format!("No ticker found for symbol: {}", symbol));
-    }
-    let result = tickers[0].clone();
-    // cache the result
-    spawn(move || {
-        let path = expand_tilde("~/.cache/trading_simulator/tickers")
-            .join(format!("{}.json", symbol));
-        let json = serde_json::to_string(&result).unwrap();
-        let _ = std::fs::create_dir_all(path.parent().unwrap());
-        let _ = std::fs::write(path, json);
-    });
-    Ok(tickers[0].clone())
+        .get_ticker(symbol.clone()).await
+        .map_err(|e| format!("{:?}", e))?.map_err(|e| format!("{:?}", e))?;
+    Ok(ticker)
 }
 
 #[tauri::command]

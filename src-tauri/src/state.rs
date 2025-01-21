@@ -1,5 +1,5 @@
 use crate::utils;
-use std::{fs, ops::Deref, str::FromStr, sync::Arc};
+use std::{fs, ops::Deref, result, str::FromStr, sync::Arc};
 use chrono::{DateTime, Utc};
 use tauri::{async_runtime::Mutex};
 use trading_engine::{bank::Bank, brokerage::Broker};
@@ -43,19 +43,27 @@ impl AppState {
         let key = env::var("ALPHAVANTAGE_TOKEN").expect("ALPHAVANTAGE_TOKEN must be set");
         let finnhub_key = env::var("FINNHUB_TOKEN").expect("FINNHUB_TOKEN must be set");
         let client = Client::new(&key);
-        let finngub_client = finnhub_rs::client::Client::new(finnhub_key);
+        let finnhub_client = finnhub_rs::client::Client::new(finnhub_key);
         let broker = Broker::new(client, bank.clone());
+
+        // This is a blocking call, so we need to run it in a tokio runtime
+        tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap()
+            .block_on(async {
+                let result = broker.check_dividend_payments(Some(get_simulated_date_utc().fixed_offset())).await;
+                if let Err(e) = result {
+                    println!("Error checking dividend payments: {:?}", e);
+                }
+            });
 
         AppState {
             broker: Mutex::new(broker),
             bank: bank.clone(),
             favorite_tickers: Mutex::new(favorite_tickers),
-            finnhub_client: finngub_client,
+            finnhub_client,
         }
-    }
-
-    pub async fn bank(&mut self) -> Arc<Mutex<Bank>> {
-        self.broker.lock().await.get_bank().clone()
     }
 
     pub async fn save(&self) -> Result<(), std::io::Error> {
@@ -75,7 +83,11 @@ impl AppState {
      * The simulation runs 24 hours behind the current date
      */
     pub fn get_simulated_date_utc(&self) -> DateTime<Utc> {
-        let now = chrono::Utc::now();
-        now - chrono::Duration::days(1)
+        get_simulated_date_utc()
     } 
+}
+
+fn get_simulated_date_utc() -> DateTime<Utc> {
+    let now = chrono::Utc::now();
+    now - chrono::Duration::days(1)
 }
