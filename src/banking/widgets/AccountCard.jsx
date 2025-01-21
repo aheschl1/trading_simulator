@@ -11,6 +11,7 @@ import useCurrentValue from "../hooks/useCurrentValue";
 import { useSimulatedDate } from "../../contexts/SimulatedDateContext";
 import sellShares from "../../market/trading/sellStock";
 import useCurrentPrice from "../../market/hooks/useCurrentPrice";
+import { FaTrashAlt } from "react-icons/fa";
 
 // Utility to convert ISO timestamp to MM/DD/YYYY
 const convertToMMDDYYYY = (isoTimestamp) => {
@@ -67,21 +68,21 @@ const HoldingListItem = ({ symbol, holding, accountId }) => {
     const { simulatedDate } = useSimulatedDate();
     const { currentValue, loading, error } = useCurrentValue(symbol, holding.quantity, simulatedDate);
     const { fetchAccounts } = useAccounts();
-    let { currentPrice, loading: currentPriceLoading, error: currentPriceError} = useCurrentPrice(symbol, simulatedDate);
+    let { currentPrice, loading: currentPriceLoading, error: currentPriceError } = useCurrentPrice(symbol, simulatedDate);
 
     const profitLoss = (currentValue - holding.average_cost_per_unit * holding.quantity).toFixed(2);
     const percentGain = ((profitLoss / (holding.average_cost_per_unit * holding.quantity)) * 100).toFixed(2);
 
     const handleSell = async () => {
-        try{
+        try {
             let quantity = prompt(`Enter the number of shares you would like to sell. Type MAX to sell all shares.`);
             if (!quantity) return;
             if (quantity.toLowerCase() === "max") {
                 quantity = holding.quantity;
-            }else{
+            } else {
                 quantity = parseInt(quantity);
                 if (isNaN(quantity) || quantity <= 0 || quantity > holding.quantity) {
-                    message("Please enter a valid number of shares to sell.", {title: "Invalid quantity", type: "error"});
+                    message("Please enter a valid number of shares to sell.", { title: "Invalid quantity", type: "error" });
                     return;
                 }
             }
@@ -89,7 +90,7 @@ const HoldingListItem = ({ symbol, holding, accountId }) => {
             fetchAccounts()
             message(`Successfully sold ${quantity} shares of ${symbol}.`);
         } catch (e) {
-            message(e, {title: "Error selling shares", type: "error"})
+            message(e, { title: "Error selling shares", type: "error" })
         }
     }
 
@@ -179,43 +180,109 @@ const addFunds = async (account, accountType) => {
     }
 };
 
-// Main account card component
+
 export default function AccountCard({ account }) {
     const [popupOpen, setPopupOpen] = useState(false);
     const [transactionsExpanded, setTransactionsExpanded] = useState(false);
-    const { fetchAccounts } = useAccounts();
+    const { fetchAccounts, selectedAccount, setSelectedAccount } = useAccounts();
 
     const accountType = account.assets ? "Investment" : "Checking";
+    const isSelected = selectedAccount === account;
 
     return (
         <>
-            {/* Account card clickable button */}
-            <ButtonBase
-                onClick={() => setPopupOpen(true)}
-                sx={{ width: "100%", display: "block", textAlign: "left" }}
-            >
-                <Card sx={{ padding: "20px", margin: "8px" }}>
+            {/* Card Container */}
+            <div style={{ position: "relative", height: "100%" }}>
+                {/* Garbage Icon and Selected Message */}
+
+                <Typography
+                    variant="subtitle2"
+                    style={{
+                        fontWeight: "bold",
+                        marginBottom: "5px",
+                        textAlign: "center",
+                        color: isSelected ? "#007bff" : "#ffffffff",
+                    }}
+                >
+                    Account selected for trades
+                </Typography>
+
+                {/* Account Card */}
+                <Card
+                    sx={{
+                        padding: "20px",
+                        margin: "8px",
+                        position: "relative",
+                        boxShadow: isSelected ? "0 0 10px rgba(0, 123, 255, 0.7)" : "0 0 5px rgba(0, 0, 0, 0.2)",
+                        backgroundColor: isSelected ? "#e6f7ff" : "#ffffff",
+                        transition: "all 0.3s ease-in-out",
+                        cursor: "pointer",
+                        border: isSelected ? "2px solid #007bff" : "1px solid #ccc",
+                        borderRadius: "8px",
+                        height: "50%",
+                        alignContent: "center",
+                        minWidth: "fit-content",
+                    }}
+                    onClick={() => setPopupOpen(true)}
+                >
+                    {/* Select Button */}
+                    <Box
+                        sx={{
+                            position: "absolute",
+                            top: "10px",
+                            right: "10px",
+                        }}
+                    >
+                        <Button
+                            onClick={(e) => {
+                                e.stopPropagation(); // Prevent the card click event
+                                setSelectedAccount(account);
+                            }}
+                            variant="outlined"
+                            color={isSelected ? "primary" : "default"}
+                            sx={{
+                                minWidth: "32px",
+                                height: "32px",
+                                borderRadius: "50%",
+                                padding: "0",
+                                textAlign: "center",
+                            }}
+                        >
+                            {isSelected ? "●" : "○"}
+                        </Button>
+                    </Box>
+
+                    {/* Account Information */}
                     <Typography variant="h6" component="div">
                         {account.nickname}
                     </Typography>
-                    <Typography variant="subtitle2" component="div">
+                    <Typography variant="subtitle2" component="div" fontWeight="bold">
                         {accountType}
                     </Typography>
                     <Typography variant="body2" component="p">
-                        Balance: ${account.balance.toFixed(2)}
+                        Cash Balance: ${account.balance.toFixed(2)}
                     </Typography>
-                    {
-                        accountType === "Investment" && (
-                            <Typography variant="body2" component="p">
-                                Total Assets: ${Object.values(account.assets).reduce((acc, asset) => acc + asset.quantity * asset.average_cost_per_unit, 0).toFixed(2)}
-                            </Typography>
-                        )
-                    }
+                    {accountType === "Investment" && (
+                        <Typography variant="body2" component="p">
+                            Asset Balance: $
+                            {Object.values(account.assets)
+                                .reduce(
+                                    (acc, asset) => acc + asset.quantity * asset.average_cost_per_unit,
+                                    0
+                                )
+                                .toFixed(2)}
+                        </Typography>
+                    )}
                 </Card>
-            </ButtonBase>
+            </div>
 
             {/* Account details dialog */}
-            <Dialog open={popupOpen} fullWidth maxWidth="md" onClose={() => setPopupOpen(false)}>
+            <Dialog
+                open={popupOpen}
+                fullWidth
+                maxWidth="md"
+                onClose={() => setPopupOpen(false)}
+            >
                 <DialogTitle>{account.nickname}</DialogTitle>
                 <DialogContent>
                     <Typography variant="body1">
@@ -224,12 +291,11 @@ export default function AccountCard({ account }) {
                     <Typography variant="h6" sx={{ marginTop: "16px" }}>
                         Account Details
                     </Typography>
-                    <Typography variant="body2">
-                        Account Type: {accountType}
-                    </Typography>
+                    <Typography variant="body2">Account Type: {accountType}</Typography>
                     <Typography variant="body2">
                         Opened: {convertToMMDDYYYY(account.created_at)}
                     </Typography>
+
                     {/* Assets */}
                     {accountType === "Investment" && (
                         <>
@@ -237,41 +303,62 @@ export default function AccountCard({ account }) {
                                 Assets
                             </Typography>
                             <List>
-                                {Object.entries(account.assets).map(([symbol, holding]) => <HoldingListItem symbol={symbol} holding={holding} accountId = {account.id}/>)}
+                                {Object.entries(account.assets).map(([symbol, holding]) => (
+                                    <HoldingListItem
+                                        key={symbol}
+                                        symbol={symbol}
+                                        holding={holding}
+                                        accountId={account.id}
+                                    />
+                                ))}
                             </List>
                         </>
                     )}
 
+                    {/* Transactions */}
                     {account.transactions.length > 0 && (
                         <>
-                            <div style={{
-                                display: "flex",
-                                alignItems: "center",
-                                width: "100%",
-                                marginTop: "16px",
-                            }}>
-                                <Typography variant="h6" style={{ "marginRight": "16px" }}>Transactions</Typography>
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    marginTop: "16px",
+                                }}
+                            >
+                                <Typography variant="h6" sx={{ marginRight: "16px" }}>
+                                    Transactions
+                                </Typography>
                                 <Button
-                                    onClick={() => setTransactionsExpanded(!transactionsExpanded)}
-                                    sx={{ textTransform: "none" }}>{transactionsExpanded ? "Hide" : "Expand"}
+                                    onClick={() =>
+                                        setTransactionsExpanded(!transactionsExpanded)
+                                    }
+                                    sx={{ textTransform: "none" }}
+                                >
+                                    {transactionsExpanded ? "Hide" : "Expand"}
                                 </Button>
-                            </div>
+                            </Box>
                             <Collapse in={transactionsExpanded} timeout="auto" unmountOnExit>
                                 <List>
-                                    {account.transactions.map((transaction) => (
-                                        <TransactionListItem transaction={transaction} key={transaction.date} />
-                                    )).reverse()}
+                                    {account.transactions
+                                        .map((transaction) => (
+                                            <TransactionListItem
+                                                transaction={transaction}
+                                                key={transaction.date}
+                                            />
+                                        ))
+                                        .reverse()}
                                 </List>
                             </Collapse>
                         </>
                     )}
 
+                    {/* Add Funds Button */}
                     <Button
                         variant="contained"
                         color="primary"
                         onClick={async () => {
                             try {
-                                await addFunds(account, accountType)
+                                await addFunds(account, accountType);
                                 message("Funds added successfully.");
                                 fetchAccounts();
                             } catch (e) {
