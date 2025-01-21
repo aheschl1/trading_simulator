@@ -5,6 +5,7 @@ export function useFetchTimeSeries(command, params) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [valid, setValid] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -21,9 +22,11 @@ export function useFetchTimeSeries(command, params) {
     };
 
     fetchData();
-  }, [command, JSON.stringify(params)]); // Include params in dependency array
+  }, [command, JSON.stringify(params), valid]); // Include params in dependency array
 
-  return { data, loading, error };
+  const invalidateData = () => setValid((prev) => !prev);
+
+  return { data, loading, error, invalidateData };
 }
 
 export const ONE_MINUTE = "OneMinute";

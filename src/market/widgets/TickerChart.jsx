@@ -3,28 +3,32 @@ import { Line } from "react-chartjs-2";
 import { useTicker } from "../context/TickerContext";
 import "./TickerChart.css";
 import { useSimulatedDate } from "../../contexts/SimulatedDateContext";
-import { Typography } from "@mui/material";
+import { IconButton, Typography, Box } from "@mui/material";
+import RefreshIcon from '@mui/icons-material/Refresh';
+import refreshIntraday from "../trading/refreshIntraday";
 
 export default function TickerChart() {
   const [timeFrame, setTimeFrame] = useState("1d");
   const [chartData, setChartData] = useState(null);
-  const { 
-    intradayFiveMinuteData, 
-    dailyData, 
-    weeklyData, 
-    monthlyData, 
-    intradayFiveMinuteLoading, 
-    dailyLoading, 
-    weeklyLoading, 
-    monthlyLoading, 
-    intradayFiveMinuteError, 
+  const {
+    intradayFiveMinuteData,
+    dailyData,
+    weeklyData,
+    monthlyData,
+    intradayFiveMinuteLoading,
+    dailyLoading,
+    weeklyLoading,
+    monthlyLoading,
+    intradayFiveMinuteError,
     intradaySixtyMinuteError,
     intradaySixtyMinuteData,
     intradaySixtyMinuteLoading,
-    dailyError, 
-    weeklyError, 
-    monthlyError, 
-    symbol 
+    dailyError,
+    weeklyError,
+    monthlyError,
+    symbol,
+    invalidateDataSixtyMinutes,
+    invalidateDataFiveMinutes
   } = useTicker();
 
   const { simulatedDate } = useSimulatedDate();
@@ -38,27 +42,27 @@ export default function TickerChart() {
 
   const timeSeries = {
     "1d": (intradayFiveMinuteLoading || intradayFiveMinuteError) ? undefined : intradayFiveMinuteData.entries.filter((entry) => {
-      const entryDate = new Date(entry.date); 
+      const entryDate = new Date(entry.date);
       return oneDayThreshold <= entryDate && entryDate <= simulatedDate;
     }),
     "1w": (intradaySixtyMinuteLoading || intradaySixtyMinuteError) ? undefined : intradaySixtyMinuteData.entries.filter((entry) => {
-      const entryDate = new Date(entry.date); 
+      const entryDate = new Date(entry.date);
       return weekThreshold <= entryDate && entryDate <= simulatedDate;
     }),
     "1m": (dailyLoading || dailyError) ? undefined : dailyData.entries.filter((entry) => {
-      const entryDate = new Date(entry.date); 
+      const entryDate = new Date(entry.date);
       return monthThreshold <= entryDate && entryDate <= simulatedDate;
     }),
     "3m": (dailyLoading || dailyError) ? undefined : dailyData.entries.filter((entry) => {
-      const entryDate = new Date(entry.date); 
+      const entryDate = new Date(entry.date);
       return threeMonthThreshold <= entryDate && entryDate <= simulatedDate;
     }),
     "1y": (weeklyLoading || weeklyError) ? undefined : weeklyData.entries.filter((entry) => {
-      const entryDate = new Date(entry.date); 
+      const entryDate = new Date(entry.date);
       return yearThreshold <= entryDate && entryDate <= simulatedDate;
     }),
     "5y": (monthlyLoading || monthlyError) ? undefined : monthlyData.entries.filter((entry) => {
-      const entryDate = new Date(entry.date); 
+      const entryDate = new Date(entry.date);
       return fiveYearThreshold <= entryDate && entryDate <= simulatedDate;
     }),
   }[timeFrame];
@@ -88,11 +92,32 @@ export default function TickerChart() {
   return (
     <div className=".parent">
       {noData ? (
-        <Typography 
-          variant="h6" 
-          fontSize="18px"
-          textAlign="center" 
-        >No data available for this range</Typography>
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          height="100%"
+          gap="8px" // Optional: Adds spacing between the text and the button
+        >
+          <Typography
+            variant="h6"
+            fontSize="18px"
+            textAlign="center"
+          >
+            No data available for this range
+          </Typography>
+          <IconButton
+            color="primary"
+            onClick={async () => {
+              await refreshIntraday(symbol);
+              invalidateDataFiveMinutes();
+              invalidateDataSixtyMinutes();
+            }}
+            aria-label="Refresh"
+          >
+            <RefreshIcon />
+          </IconButton>
+        </Box>
       ) : chartData ? (
         <Line
           data={chartData}

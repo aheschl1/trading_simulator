@@ -16,8 +16,8 @@ import useCompanyProfile from "../hooks/useCompanyProfile";
 const TickerContext = createContext()
 
 export function TickerProvider({ children, symbol}) {
-    const { data: intradayFiveMinuteData, loading: intradayFiveMinuteLoading, error: intradayFiveMinuteError } = getTimeSeriesIntraday(symbol, FIVE_MINUTES);
-    const { data: intradaySixtyMinuteData, loading: intradaySixtyMinuteLoading, error: intradaySixtyMinuteError } = getTimeSeriesIntraday(symbol, SIXTY_MINUTES);
+    const { data: intradayFiveMinuteData, loading: intradayFiveMinuteLoading, error: intradayFiveMinuteError, invalidateData: invalidateDataFiveMinutes } = getTimeSeriesIntraday(symbol, FIVE_MINUTES);
+    const { data: intradaySixtyMinuteData, loading: intradaySixtyMinuteLoading, error: intradaySixtyMinuteError, invalidateData: invalidateDataSixtyMinutes } = getTimeSeriesIntraday(symbol, SIXTY_MINUTES);
     const { data: dailyData, loading: dailyLoading, error: dailyError } = getTimeSeriesDailyFull(symbol);
     const { data: weeklyData, loading: weeklyLoading, error: weeklyError } = getTimeSeriesWeeklyFull(symbol);
     const { data: monthlyData, loading: monthlyLoading, error: monthlyError } = getTimeSeriesMonthlyFull(symbol);
@@ -51,7 +51,9 @@ export function TickerProvider({ children, symbol}) {
         tickerDetailsError,
         companyProfile,
         companyProfileLoading,
-        companyProfileError
+        companyProfileError,
+        invalidateDataFiveMinutes,
+        invalidateDataSixtyMinutes
     }}>{children}</TickerContext.Provider>
 }
 

@@ -109,13 +109,12 @@ export default function TickerPopup({ open, setOpen, purchase, loadingPurchase }
         tickerDetailsError,
         companyProfile,
         companyProfileLoading,
-        companyProfileError,
+        companyProfileError
     } = useTicker();
 
     let { simulatedDate } = useSimulatedDate();
     let { currentPrice, loading: currentPriceLoading, error: currentPriceError } = useCurrentPrice(symbol, simulatedDate);
     let [detailsOpen, setDetailsOpen] = useState(false);
-    let { companyNews, loading: companyNewsLoading, error: companyNewsError } = useCompanyNews(symbol);
 
     useEffect(() => {
         if (!intradayFiveMinuteData) return;
@@ -148,7 +147,7 @@ export default function TickerPopup({ open, setOpen, purchase, loadingPurchase }
                 <DialogContent>
                     <TickerChart />
                     <div style={{ height: "16px" }} />
-                    <Typography variant="body1">Last Updated: {lastUpdated}</Typography>
+                    <Typography variant="body1">API Last Updated: {lastUpdated}</Typography>
                     <Typography variant="body1">
                         Current Price: {currentPriceLoading ? "Loading..." : currentPriceError ? "Error" : `$${currentPrice}`}
                     </Typography>
